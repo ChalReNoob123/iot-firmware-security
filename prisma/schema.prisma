@@ -1,0 +1,124 @@
+// SentinelForge: Neon Postgres Core Relational Schema (Prisma)
+// Per Section 5.1 of SentinelForge Product Requirements Document (PRD)
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DATABASE_URL_UNPOOLED")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  ADMIN
+  SECURITY_ANALYST
+  RESEARCHER
+  CI_AGENT
+}
+
+enum AnalysisStatus {
+  QUEUED
+  EXTRACTING
+  STATIC_COMPLETE
+  EMULATING
+  FUZZING
+  SYNTHESIZING_GRAPH
+  COMPLETED
+  FAILED
+}
+
+enum Severity {
+  CRITICAL
+  HIGH
+  MEDIUM
+  LOW
+  INFORMATIONAL
+}
+
+model Organization {
+  id          String       @id @default(uuid())
+  name        String
+  slug        String       @unique
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  users       User[]
+  projects    Project[]
+}
+
+model User {
+  id             String             @id @default(uuid())
+  orgId          String
+  organization   Organization       @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  email          String             @unique
+  passwordHash   String?
+  role           Role               @default(SECURITY_ANALYST)
+  totpSecret     String?
+  twoFactorReady Boolean            @default(false)
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+  analyses       FirmwareAnalysis[]
+}
+
+model Project {
+  id             String             @id @default(uuid())
+  orgId          String
+  organization   Organization       @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  name           String
+  description    String?
+  firmwares      FirmwareAnalysis[]
+  createdAt      DateTime           @default(now())
+}
+
+model FirmwareAnalysis {
+  id               String            @id @default(uuid())
+  projectId        String
+  project          Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  userId           String
+  user             User              @relation(fields: [userId], references: [id])
+  filename         String
+  sha256           String            @unique
+  md5              String
+  sizeBytes        BigInt
+  s3BlobPath       String
+  architecture     String?
+  endianness       String?
+  status           AnalysisStatus    @default(QUEUED)
+  errorReason      String?
+  staticArtifacts  Json?
+  vulnerabilities  Vulnerability[]
+  sbomRecords      SbomRecord[]
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+}
+
+model Vulnerability {
+  id               String            @id @default(uuid())
+  firmwareId       String
+  firmware         FirmwareAnalysis  @relation(fields: [firmwareId], references: [id], onDelete: Cascade)
+  cveId            String?
+  cweId            String?
+  title            String
+  description      String
+  severity         Severity
+  cvssScore        Float?
+  epssScore        Float?
+  isZeroDay        Boolean           @default(false)
+  discoveredVia    String            // "STATIC_TAINT", "DYNAMIC_FUZZ", "SYMBOLIC_EXEC"
+  reproducibleSeed String?           // S3 object key to payload
+  crashBacktrace   String?
+  createdAt        DateTime          @default(now())
+}
+
+model SbomRecord {
+  id             String            @id @default(uuid())
+  firmwareId     String
+  firmware       FirmwareAnalysis  @relation(fields: [firmwareId], references: [id], onDelete: Cascade)
+  componentName  String
+  version        String
+  license        String?
+  purl           String?
+  cpe            String?
+  isReachable    Boolean           @default(false)
+}

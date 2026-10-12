@@ -1,0 +1,331 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 6 9 14;
+    --foreground: 241 245 249;
+  }
+
+  body {
+    background-color: #06090e;
+    color: #f1f5f9;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    overflow-x: hidden;
+  }
+}
+
+/* Custom Cyber-Ops Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #090e17;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #00f5d4;
+}
+
+/* Cyber Glow & Glassmorphism Utilities */
+.glass-panel {
+  background: rgba(16, 23, 38, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(56, 189, 248, 0.15);
+}
+
+.glass-panel-glow {
+  background: rgba(16, 23, 38, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(0, 245, 212, 0.3);
+  box-shadow: 0 0 20px rgba(0, 245, 212, 0.1);
+}
+
+.glow-cyan {
+  text-shadow: 0 0 10px rgba(0, 245, 212, 0.5);
+}
+
+.glow-rose {
+  text-shadow: 0 0 10px rgba(255, 51, 102, 0.5);
+}
+
+.glow-violet {
+  text-shadow: 0 0 10px rgba(123, 44, 191, 0.5);
+}
+
+/* CRT Scanline Overlay Effect */
+.scanlines {
+  position: relative;
+}
+
+.scanlines::after {
+  content: " ";
+  display: block;
+  position: absolute;
+  top: 0; left: 0; bottom: 0; right: 0;
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+  z-index: 10;
+  background-size: 100% 3px, 6px 100%;
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+.cyber-grid {
+  background-image: 
+    linear-gradient(to right, rgba(56, 189, 248, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(56, 189, 248, 0.05) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+/* =========================================================================
+   FUTURISTIC FLUID MOTION & KINETIC VISUAL UTILITIES
+   ========================================================================= */
+
+/* Liquid Glowing Border with smooth angular rotation */
+@property --border-angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+
+@keyframes rotate-border-angle {
+  0% {
+    --border-angle: 0deg;
+  }
+  100% {
+    --border-angle: 360deg;
+  }
+}
+
+.cyber-liquid-border {
+  position: relative;
+  border-radius: 0.75rem;
+}
+
+.cyber-liquid-border::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1.5px;
+  background: conic-gradient(
+    from var(--border-angle),
+    #00f5d4 0deg,
+    #7b2cbf 90deg,
+    #ff3366 180deg,
+    #38bdf8 270deg,
+    #00f5d4 360deg
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: rotate-border-angle 6s linear infinite;
+  pointer-events: none;
+  opacity: 0.65;
+  transition: opacity 0.3s ease;
+}
+
+.cyber-liquid-border:hover::before {
+  opacity: 1;
+  animation-duration: 3s;
+}
+
+/* Fluid Magnetic Lift with cubic-bezier spring easing */
+.cyber-hover-lift {
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.35s ease;
+}
+
+.cyber-hover-lift:hover {
+  transform: translateY(-3px) scale(1.008);
+  box-shadow: 0 12px 30px -10px rgba(0, 245, 212, 0.25), 0 0 1px 1px rgba(0, 245, 212, 0.3);
+}
+
+/* Holographic Sheen Sweep for Buttons & Cards */
+.cyber-sheen-sweep {
+  position: relative;
+  overflow: hidden;
+}
+
+.cyber-sheen-sweep::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    60deg,
+    transparent 35%,
+    rgba(0, 245, 212, 0.15) 50%,
+    transparent 65%
+  );
+  transform: translateX(-100%);
+  transition: transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+}
+
+.cyber-sheen-sweep:hover::after {
+  transform: translateX(100%);
+}
+
+/* 360-Degree Continuous Radar Sweep */
+@keyframes radar-sweep-360 {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-radar-sweep {
+  animation: radar-sweep-360 4s linear infinite;
+  transform-origin: center center;
+}
+
+/* Fluid Floating Drift (Organic sin/cos translation) */
+@keyframes fluid-drift {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-6px) rotate(0.5deg);
+  }
+}
+
+.animate-fluid-drift {
+  animation: fluid-drift 5s ease-in-out infinite;
+}
+
+/* Fluid Audio/Telemetry Equalizer Bar Animation */
+@keyframes fluid-eq-1 {
+  0%, 100% { height: 25%; }
+  50% { height: 95%; }
+}
+
+@keyframes fluid-eq-2 {
+  0%, 100% { height: 80%; }
+  50% { height: 30%; }
+}
+
+@keyframes fluid-eq-3 {
+  0%, 100% { height: 45%; }
+  50% { height: 100%; }
+}
+
+.animate-eq-1 {
+  animation: fluid-eq-1 0.8s ease-in-out infinite alternate;
+}
+
+.animate-eq-2 {
+  animation: fluid-eq-2 1.1s ease-in-out infinite alternate;
+}
+
+.animate-eq-3 {
+  animation: fluid-eq-3 0.65s ease-in-out infinite alternate;
+}
+
+/* Holographic Gradient Text Shimmer */
+@keyframes text-shimmer {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.cyber-text-shimmer {
+  background: linear-gradient(
+    90deg,
+    #00f5d4 0%,
+    #38bdf8 30%,
+    #a855f7 60%,
+    #00f5d4 100%
+  );
+  background-size: 200% auto;
+  color: transparent;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: text-shimmer 4s linear infinite;
+}
+
+/* Pulsing Acoustic Cyber Ring */
+@keyframes radar-ping-ring {
+  0% {
+    transform: scale(0.6);
+    opacity: 0.9;
+  }
+  100% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+}
+
+.cyber-ping-ring {
+  animation: radar-ping-ring 2.4s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+/* =========================================================================
+   CINEMATIC LIGHTING & ANAMORPHIC FLARE UTILITIES
+   ========================================================================= */
+
+.cinematic-lens-flare {
+  position: absolute;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(0, 245, 212, 0.1) 20%,
+    rgba(0, 245, 212, 0.9) 50%,
+    rgba(168, 85, 247, 0.9) 60%,
+    rgba(255, 51, 102, 0.6) 70%,
+    transparent 100%
+  );
+  filter: blur(1px);
+  pointer-events: none;
+}
+
+.cinematic-cyber-glass {
+  background: linear-gradient(
+    135deg,
+    rgba(16, 23, 38, 0.82) 0%,
+    rgba(9, 14, 23, 0.92) 50%,
+    rgba(16, 23, 38, 0.85) 100%
+  );
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(0, 245, 212, 0.25);
+  box-shadow: 
+    0 20px 50px rgba(0, 0, 0, 0.6),
+    0 0 30px rgba(0, 245, 212, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.cinematic-glow-cyan {
+  box-shadow: 0 0 35px rgba(0, 245, 212, 0.25), inset 0 0 15px rgba(0, 245, 212, 0.1);
+}
+
+.cinematic-glow-rose {
+  box-shadow: 0 0 35px rgba(255, 51, 102, 0.25), inset 0 0 15px rgba(255, 51, 102, 0.1);
+}
+
+.cinematic-glow-purple {
+  box-shadow: 0 0 35px rgba(168, 85, 247, 0.25), inset 0 0 15px rgba(168, 85, 247, 0.1);
+}
+
+
