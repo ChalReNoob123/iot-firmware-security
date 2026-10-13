@@ -10,30 +10,58 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        void: {
+          950: "#050507",
+          900: "#08080A",
+          850: "#0B0C0F",
+          800: "#0D0E12",
+          700: "#14151B",
+          600: "#1C1D24"
+        },
+        zinc: {
+          850: "#1F1F23",
+          border: "#27272A"
+        },
+        neon: {
+          cyan: "#00F0FF",
+          amber: "#FFB800",
+          crimson: "#FF3B30",
+          emerald: "#10B981",
+          purple: "#A855F7",
+          blue: "#38BDF8"
+        },
         cyber: {
-          bg: "#06090e",
-          surface: "#0c111a",
-          card: "#101726",
-          cardHover: "#151f33",
-          border: "rgba(56, 189, 248, 0.15)",
-          cyan: "#00f5d4",
+          bg: "#08080A",
+          surface: "#0D0E12",
+          card: "#121318",
+          cardHover: "#171821",
+          border: "#27272A",
+          cyan: "#00F0FF",
           violet: "#7b2cbf",
-          purple: "#a855f7",
-          rose: "#ff3366",
-          amber: "#f59e0b",
+          purple: "#A855F7",
+          rose: "#FF3B30",
+          amber: "#FFB800",
           blue: "#38bdf8",
           emerald: "#10b981",
           muted: "#94a3b8"
         }
       },
+      fontFamily: {
+        sans: ["Inter", "-apple-system", "BlinkMacSystemFont", "sans-serif"],
+        heading: ["Space Grotesk", "Inter", "sans-serif"],
+        mono: ["JetBrains Mono", "ui-monospace", "SFMono-Regular", "monospace"]
+      },
       backgroundImage: {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
-        "cyber-grid": "radial-gradient(rgba(56, 189, 248, 0.1) 1px, transparent 1px)"
+        "cyber-grid": "radial-gradient(rgba(0, 240, 255, 0.08) 1px, transparent 1px)",
+        "void-gradient": "linear-gradient(180deg, #08080A 0%, #0D0E12 100%)",
+        "hairline-gradient": "linear-gradient(90deg, transparent, rgba(0, 240, 255, 0.4), transparent)"
       },
       animation: {
         "pulse-slow": "pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite",
         "scan-sweep": "scan 3s ease-in-out infinite",
-        "glow": "glow 2s ease-in-out infinite alternate"
+        "glow": "glow 2s ease-in-out infinite alternate",
+        "ticker": "ticker 25s linear infinite"
       },
       keyframes: {
         scan: {
@@ -41,8 +69,12 @@ const config: Config = {
           "50%": { transform: "translateY(100%)" }
         },
         glow: {
-          "0%": { boxShadow: "0 0 5px rgba(0, 245, 212, 0.2)" },
-          "100%": { boxShadow: "0 0 20px rgba(0, 245, 212, 0.6)" }
+          "0%": { boxShadow: "0 0 5px rgba(0, 240, 255, 0.2)" },
+          "100%": { boxShadow: "0 0 25px rgba(0, 240, 255, 0.6)" }
+        },
+        ticker: {
+          "0%": { transform: "translateX(0)" },
+          "100%": { transform: "translateX(-50%)" }
         }
       }
     }

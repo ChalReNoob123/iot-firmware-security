@@ -33,7 +33,15 @@ export default function AttestationModal() {
 
       const updated = { ...attestationTargetDevice, activeAttestation: record };
       setActiveDevice(updated);
+      if (typeof window !== 'undefined') {
+        try {
+          sessionStorage.setItem(`sentinelforge_attestation_${attestationTargetDevice.id}`, JSON.stringify(record));
+        } catch (e) {
+          // Ignore storage quota errors
+        }
+      }
       closeAttestationModal();
+
     } catch (err) {
       console.error('Failed to sign attestation:', err);
     } finally {

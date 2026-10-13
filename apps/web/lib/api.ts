@@ -1217,6 +1217,8 @@ export async function solveDijkstraShortestPath(
       relaxationSteps: [],
       hops: [],
       alternativePaths: [],
+      rankedPaths: [],
+      defenseEffectivenessPercent: 78.0,
       mitigationAdvice: ['Primary BLE attack path successfully neutralized via virtual patch.']
     };
   }

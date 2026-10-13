@@ -43,7 +43,13 @@ export default function FirmwareUploadModal() {
       return;
     }
 
+    if (selectedFile.size > 256 * 1024 * 1024) {
+      setError('Firmware file exceeds the maximum 256MB upload limit.');
+      return;
+    }
+
     setIsUploading(true);
+
     setError(null);
     try {
       const res = await uploadFirmware(selectedFile, projectId, fuzzBudgetMs);

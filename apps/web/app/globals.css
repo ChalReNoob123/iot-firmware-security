@@ -1,66 +1,133 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Space+Grotesk:wght@400;500;600;700;800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --background: 6 9 14;
-    --foreground: 241 245 249;
+    --background: 8 8 10;
+    --foreground: 244 244 245;
   }
 
   body {
-    background-color: #06090e;
-    color: #f1f5f9;
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    background-color: #08080A;
+    color: #F4F4F5;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     overflow-x: hidden;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Space Grotesk', 'Inter', sans-serif;
+  }
+
+  code, pre, .font-mono {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
   }
 }
 
-/* Custom Cyber-Ops Scrollbar */
+/* Custom Cyber / Void Scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #090e17;
+  background: #08080A;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #1e293b;
-  border-radius: 3px;
+  background: #27272A;
+  border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #00f5d4;
+  background: #00F0FF;
 }
 
-/* Cyber Glow & Glassmorphism Utilities */
+/* Void & Igloo Inc Glassmorphic Tokens */
+.glass-pill {
+  background: rgba(13, 14, 18, 0.75);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(39, 39, 42, 0.8);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+.glass-card-void {
+  background: rgba(13, 14, 18, 0.7);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid #27272A;
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.7);
+}
+
+.glass-card-void:hover {
+  border-color: rgba(0, 240, 255, 0.35);
+  box-shadow: 0 20px 45px -10px rgba(0, 240, 255, 0.08), 0 0 0 1px rgba(0, 240, 255, 0.15);
+}
+
+.hairline-border {
+  border: 1px solid #27272A;
+}
+
+.hairline-b {
+  border-bottom: 1px solid #27272A;
+}
+
+.hairline-t {
+  border-top: 1px solid #27272A;
+}
+
+/* Subtle Film Grain Noise Overlay */
+.bg-grain {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.035'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+}
+
+/* Radial Glow utility */
+.radial-glow-cyan {
+  background: radial-gradient(circle at 50% 0%, rgba(0, 240, 255, 0.12) 0%, transparent 60%);
+}
+
+.radial-glow-ambient {
+  background: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(0, 240, 255, 0.15), transparent);
+}
+
+/* Cyber Glow Utilities */
 .glass-panel {
-  background: rgba(16, 23, 38, 0.75);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(56, 189, 248, 0.15);
+  background: rgba(13, 14, 18, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid #27272A;
 }
 
 .glass-panel-glow {
-  background: rgba(16, 23, 38, 0.85);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(0, 245, 212, 0.3);
-  box-shadow: 0 0 20px rgba(0, 245, 212, 0.1);
+  background: rgba(13, 14, 18, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(0, 240, 255, 0.3);
+  box-shadow: 0 0 25px rgba(0, 240, 255, 0.08);
 }
 
 .glow-cyan {
-  text-shadow: 0 0 10px rgba(0, 245, 212, 0.5);
+  text-shadow: 0 0 12px rgba(0, 240, 255, 0.6);
+}
+
+.glow-amber {
+  text-shadow: 0 0 12px rgba(255, 184, 0, 0.6);
+}
+
+.glow-crimson {
+  text-shadow: 0 0 12px rgba(255, 59, 48, 0.6);
 }
 
 .glow-rose {
-  text-shadow: 0 0 10px rgba(255, 51, 102, 0.5);
+  text-shadow: 0 0 12px rgba(255, 59, 48, 0.6);
 }
 
 .glow-violet {
-  text-shadow: 0 0 10px rgba(123, 44, 191, 0.5);
+  text-shadow: 0 0 12px rgba(168, 85, 247, 0.6);
 }
 
 /* CRT Scanline Overlay Effect */
@@ -73,23 +140,19 @@
   display: block;
   position: absolute;
   top: 0; left: 0; bottom: 0; right: 0;
-  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.02), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.02));
   z-index: 10;
   background-size: 100% 3px, 6px 100%;
   pointer-events: none;
-  opacity: 0.6;
+  opacity: 0.5;
 }
 
 .cyber-grid {
   background-image: 
-    linear-gradient(to right, rgba(56, 189, 248, 0.05) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(56, 189, 248, 0.05) 1px, transparent 1px);
+    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
   background-size: 32px 32px;
 }
-
-/* =========================================================================
-   FUTURISTIC FLUID MOTION & KINETIC VISUAL UTILITIES
-   ========================================================================= */
 
 /* Liquid Glowing Border with smooth angular rotation */
 @property --border-angle {
@@ -117,14 +180,14 @@
   position: absolute;
   inset: -1px;
   border-radius: inherit;
-  padding: 1.5px;
+  padding: 1px;
   background: conic-gradient(
     from var(--border-angle),
-    #00f5d4 0deg,
+    #00F0FF 0deg,
     #7b2cbf 90deg,
-    #ff3366 180deg,
+    #FF3B30 180deg,
     #38bdf8 270deg,
-    #00f5d4 360deg
+    #00F0FF 360deg
   );
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
@@ -146,8 +209,8 @@
 }
 
 .cyber-hover-lift:hover {
-  transform: translateY(-3px) scale(1.008);
-  box-shadow: 0 12px 30px -10px rgba(0, 245, 212, 0.25), 0 0 1px 1px rgba(0, 245, 212, 0.3);
+  transform: translateY(-3px) scale(1.006);
+  box-shadow: 0 16px 36px -10px rgba(0, 240, 255, 0.2), 0 0 1px 1px rgba(0, 240, 255, 0.3);
 }
 
 /* Holographic Sheen Sweep for Buttons & Cards */
@@ -166,7 +229,7 @@
   background: linear-gradient(
     60deg,
     transparent 35%,
-    rgba(0, 245, 212, 0.15) 50%,
+    rgba(0, 240, 255, 0.15) 50%,
     transparent 65%
   );
   transform: translateX(-100%);
@@ -176,35 +239,6 @@
 
 .cyber-sheen-sweep:hover::after {
   transform: translateX(100%);
-}
-
-/* 360-Degree Continuous Radar Sweep */
-@keyframes radar-sweep-360 {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.animate-radar-sweep {
-  animation: radar-sweep-360 4s linear infinite;
-  transform-origin: center center;
-}
-
-/* Fluid Floating Drift (Organic sin/cos translation) */
-@keyframes fluid-drift {
-  0%, 100% {
-    transform: translateY(0px) rotate(0deg);
-  }
-  50% {
-    transform: translateY(-6px) rotate(0.5deg);
-  }
-}
-
-.animate-fluid-drift {
-  animation: fluid-drift 5s ease-in-out infinite;
 }
 
 /* Fluid Audio/Telemetry Equalizer Bar Animation */
@@ -251,10 +285,10 @@
 .cyber-text-shimmer {
   background: linear-gradient(
     90deg,
-    #00f5d4 0%,
+    #00F0FF 0%,
     #38bdf8 30%,
     #a855f7 60%,
-    #00f5d4 100%
+    #00F0FF 100%
   );
   background-size: 200% auto;
   color: transparent;
@@ -279,53 +313,18 @@
   animation: radar-ping-ring 2.4s cubic-bezier(0, 0, 0.2, 1) infinite;
 }
 
-/* =========================================================================
-   CINEMATIC LIGHTING & ANAMORPHIC FLARE UTILITIES
-   ========================================================================= */
-
-.cinematic-lens-flare {
-  position: absolute;
-  width: 100%;
-  height: 2px;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(0, 245, 212, 0.1) 20%,
-    rgba(0, 245, 212, 0.9) 50%,
-    rgba(168, 85, 247, 0.9) 60%,
-    rgba(255, 51, 102, 0.6) 70%,
-    transparent 100%
-  );
-  filter: blur(1px);
-  pointer-events: none;
-}
-
 .cinematic-cyber-glass {
   background: linear-gradient(
     135deg,
-    rgba(16, 23, 38, 0.82) 0%,
-    rgba(9, 14, 23, 0.92) 50%,
-    rgba(16, 23, 38, 0.85) 100%
+    rgba(13, 14, 18, 0.85) 0%,
+    rgba(8, 8, 10, 0.95) 50%,
+    rgba(13, 14, 18, 0.88) 100%
   );
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(0, 245, 212, 0.25);
+  border: 1px solid #27272A;
   box-shadow: 
-    0 20px 50px rgba(0, 0, 0, 0.6),
-    0 0 30px rgba(0, 245, 212, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    0 20px 50px rgba(0, 0, 0, 0.7),
+    0 0 30px rgba(0, 240, 255, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
-
-.cinematic-glow-cyan {
-  box-shadow: 0 0 35px rgba(0, 245, 212, 0.25), inset 0 0 15px rgba(0, 245, 212, 0.1);
-}
-
-.cinematic-glow-rose {
-  box-shadow: 0 0 35px rgba(255, 51, 102, 0.25), inset 0 0 15px rgba(255, 51, 102, 0.1);
-}
-
-.cinematic-glow-purple {
-  box-shadow: 0 0 35px rgba(168, 85, 247, 0.25), inset 0 0 15px rgba(168, 85, 247, 0.1);
-}
-
-

@@ -600,11 +600,16 @@ export default function WarRoomPage() {
               AI
             </span>
           </div>
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-cyber-emerald/10 border border-cyber-emerald/30 text-cyber-emerald text-[11px] font-bold">
+            <span className="w-2 h-2 rounded-full bg-cyber-emerald animate-pulse" />
+            <span>TELEMETRY FEED: LIVE</span>
+          </div>
           <span className="text-[11px] text-cyber-emerald font-bold px-2.5 py-1 rounded-lg bg-cyber-emerald/10 border border-cyber-emerald/30">
             4 Collaborators Live
           </span>
         </div>
       </div>
+
 
       {/* KPI Stats Grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">

@@ -1,5 +1,7 @@
+import os
 import hashlib
 import uuid
+
 from datetime import datetime, timezone
 from typing import List, Optional, Dict, Any
 from fastapi import APIRouter, File, UploadFile, Form, HTTPException, status
@@ -157,6 +159,8 @@ def _init_default_firmware():
 
 _init_default_firmware()
 
+MAX_FIRMWARE_SIZE_BYTES = 256 * 1024 * 1024  # 256 MB upload limit
+
 @router.post("/upload", response_model=FirmwareUploadResponse, status_code=status.HTTP_202_ACCEPTED)
 async def upload_firmware(
     file: UploadFile = File(...),
@@ -165,29 +169,48 @@ async def upload_firmware(
 ):
     """
     Ingest Firmware Package per PRD Section 9.1
-    Streams binary, computes SHA256 and MD5, dispatches asynchronous extraction & fuzzing,
-    and returns 202 Accepted with links to telemetry and attack graph.
+    Streams binary in bounded chunks, verifies size limits, computes SHA256 and MD5,
+    and returns 202 Accepted.
     """
-    content = await file.read()
-    if not content:
-        # Fallback simulated content if empty test stream
-        content = b"SENTINELFORGE_MOCK_FIRMWARE_BINARY_HEADER"
+    sha256_hasher = hashlib.sha256()
+    md5_hasher = hashlib.md5()
+    total_bytes = 0
+    chunk_size = 64 * 1024  # 64 KB chunks
 
-    sha256_hash = hashlib.sha256(content).hexdigest()
-    md5_hash = hashlib.md5(content).hexdigest()
+    while chunk := await file.read(chunk_size):
+        total_bytes += len(chunk)
+        if total_bytes > MAX_FIRMWARE_SIZE_BYTES:
+            raise HTTPException(
+                status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                detail="Payload too large: Firmware binary exceeds the 256MB processing threshold."
+            )
+        sha256_hasher.update(chunk)
+        md5_hasher.update(chunk)
+
+    if total_bytes == 0:
+        # Fallback simulation if an empty stream was provided in test environment
+        simulated = b"SENTINELFORGE_MOCK_FIRMWARE_BINARY_HEADER"
+        total_bytes = len(simulated)
+        sha256_hasher.update(simulated)
+        md5_hasher.update(simulated)
+
+    sha256_hash = sha256_hasher.hexdigest()
+    md5_hash = md5_hasher.hexdigest()
     analysis_id = str(uuid.uuid4())
     now_iso = datetime.now(timezone.utc).isoformat()
+    clean_filename = os.path.basename(file.filename or "uploaded_firmware.bin").replace("..", "")
 
     # Save to in-memory store
     record = FirmwareAnalysisRecord(
         id=analysis_id,
         projectId=projectId,
         userId="usr_analyst_current",
-        filename=file.filename or "uploaded_firmware.bin",
+        filename=clean_filename,
         sha256=sha256_hash,
         md5=md5_hash,
-        sizeBytes=len(content),
-        s3BlobPath=f"s3://sentinelforge-blobs/firmware/{analysis_id}/{file.filename or 'firmware.bin'}",
+        sizeBytes=total_bytes,
+        s3BlobPath=f"s3://sentinelforge-blobs/firmware/{analysis_id}/{clean_filename}",
+
         architecture="ARMv7-A",
         endianness="LITTLE",
         status="EXTRACTING",
