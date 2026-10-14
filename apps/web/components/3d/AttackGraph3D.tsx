@@ -158,33 +158,46 @@ export default function AttackGraph3D({
   // Base Sugiyama Kill-Chain Layout Coordinates
   const sugiyamaPositions = useMemo<Record<string, { x: number; y: number }>>(() => {
     return {
-      // Tier 0: Ingress Layer (X = 90)
-      node_entry_ble: { x: 90, y: 80 },
-      node_entry_http: { x: 90, y: 180 },
-      node_entry_uart: { x: 90, y: 280 },
-      node_entry_mqtt: { x: 90, y: 380 },
+      // Tier 0: Ingress Layer (X = 95)
+      node_entry_ble: { x: 95, y: 75 },
+      node_entry_http: { x: 95, y: 175 },
+      node_entry_uart: { x: 95, y: 275 },
+      node_entry_mqtt: { x: 95, y: 375 },
 
-      // Tier 1: Ingress Vulnerabilities (X = 290)
-      node_vuln_overflow: { x: 290, y: 90 },
-      node_vuln_http_auth_bypass: { x: 290, y: 190 },
-      node_vuln_uboot_env: { x: 290, y: 290 },
-      node_vuln_mqtt_wildcard: { x: 290, y: 390 },
+      // Tier 1: Ingress Vulnerabilities (X = 295)
+      node_vuln_overflow: { x: 295, y: 75 },
+      node_vuln_http_auth_bypass: { x: 295, y: 175 },
+      node_vuln_uboot_env: { x: 295, y: 275 },
+      node_vuln_mqtt_wildcard: { x: 295, y: 375 },
 
-      // Tier 2: Execution Sandboxes & Contexts (X = 490)
-      node_priv_ble_daemon: { x: 490, y: 90 },
-      node_priv_web_user: { x: 490, y: 190 },
-      node_priv_operator: { x: 490, y: 290 },
+      // Tier 2: Execution Sandboxes & Contexts (X = 495)
+      node_priv_ble_daemon: { x: 495, y: 105 },
+      node_priv_web_user: { x: 495, y: 215 },
+      node_priv_operator: { x: 495, y: 325 },
 
-      // Tier 3: Privilege Escalation & Peripherals (X = 690)
-      node_vuln_nvram_escalation: { x: 690, y: 140 },
-      node_bus_spi: { x: 690, y: 310 },
+      // Tier 3: Privilege Escalation & Peripherals (X = 695)
+      node_vuln_nvram_escalation: { x: 695, y: 160 },
+      node_bus_spi: { x: 695, y: 300 },
 
-      // Tier 4: Critical Target Assets (X = 890)
-      node_asset_root_shell: { x: 890, y: 140 },
-      node_asset_bmc_flash: { x: 890, y: 270 },
-      node_asset_crypto_store: { x: 890, y: 390 }
+      // Tier 4: Critical Target Assets (X = 895)
+      node_asset_root_shell: { x: 895, y: 160 },
+      node_asset_bmc_flash: { x: 895, y: 270 },
+      node_asset_crypto_store: { x: 895, y: 375 }
     };
   }, []);
+
+  // Escape key handler for matrix modal
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setShowMatrixModal(false);
+      }
+    };
+    if (showMatrixModal) {
+      window.addEventListener('keydown', handleKeyDown);
+    }
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [showMatrixModal]);
 
   // Concentric Radial Defense-in-Depth Layout Coordinates
   const concentricPositions = useMemo<Record<string, { x: number; y: number }>>(() => {
@@ -654,14 +667,14 @@ export default function AttackGraph3D({
 
           {/* SVG Viewport Container */}
           <div
-            className="flex-1 relative w-full h-[470px] overflow-hidden cursor-grab active:cursor-grabbing bg-cyber-bg/90"
+            className="flex-1 relative w-full min-h-[540px] h-[560px] overflow-hidden cursor-grab active:cursor-grabbing bg-cyber-bg/90"
             onMouseDown={handleCanvasMouseDown}
             onMouseMove={handleCanvasMouseMove}
             onMouseUp={handleCanvasMouseUp}
           >
             <svg
               className="w-full h-full"
-              viewBox="0 0 1000 480"
+              viewBox="0 0 1020 480"
               style={{
                 transform: `translate(${panOffset.x}px, ${panOffset.y}px) scale(${zoomLevel})`,
                 transformOrigin: 'center center',
@@ -728,11 +741,11 @@ export default function AttackGraph3D({
               {layoutMode === 'SUGIYAMA' ? (
                 <g opacity="0.15">
                   {[
-                    { x: 90, label: 'INGRESS TIER' },
-                    { x: 290, label: 'VULNERABILITY' },
-                    { x: 490, label: 'PRIVILEGE CONTEXT' },
-                    { x: 690, label: 'ESCALATION / BUS' },
-                    { x: 890, label: 'TARGET ASSETS' }
+                    { x: 95, label: 'INGRESS TIER' },
+                    { x: 295, label: 'VULNERABILITY' },
+                    { x: 495, label: 'PRIVILEGE CONTEXT' },
+                    { x: 695, label: 'ESCALATION / BUS' },
+                    { x: 895, label: 'TARGET ASSETS' }
                   ].map((tier, i) => (
                     <g key={i}>
                       <line x1={tier.x} y1={20} x2={tier.x} y2={460} stroke="#38bdf8" strokeDasharray="3,6" />
@@ -831,27 +844,43 @@ export default function AttackGraph3D({
                         e.stopPropagation();
                         toggleSeverEdge(edge.id);
                       }}
-                      className="cursor-pointer"
+                      className="cursor-pointer group/badge"
                     >
-                      <rect
-                        x="-38"
-                        y="-9"
-                        width="76"
-                        height="18"
-                        rx="4"
-                        fill={isSevered ? '#450a0a' : '#090d16'}
-                        stroke={isSevered ? '#ef4444' : isInActivePath ? '#ff3366' : '#1e293b'}
-                        strokeWidth={isInActivePath ? 1.2 : 0.8}
-                      />
-                      <text
-                        y="3"
-                        fill={isSevered ? '#fca5a5' : isInActivePath ? '#ff3366' : '#64748b'}
-                        fontSize="8.5"
-                        fontWeight="bold"
-                        textAnchor="middle"
-                      >
-                        {isSevered ? '✂ SEVERED' : edge.relationship}
-                      </text>
+                      <title>{isSevered ? 'Click to restore edge' : 'Click to sever edge (Virtual Patch)'}</title>
+                      {(() => {
+                        const rel = edge.relationship as string;
+                        const relShort = isSevered
+                          ? '✂ SEVERED'
+                          : rel === 'ACCESSES_PERIPHERAL'
+                          ? 'BUS_ACCESS'
+                          : rel === 'ALLOWS_LATERAL_MOVE'
+                          ? 'LATERAL_MOVE'
+                          : rel;
+                        const badgeW = Math.max(76, relShort.length * 6.8 + 16);
+                        return (
+                          <>
+                            <rect
+                              x={-badgeW / 2}
+                              y="-9"
+                              width={badgeW}
+                              height="18"
+                              rx="5"
+                              fill={isSevered ? '#450a0a' : '#090d16'}
+                              stroke={isSevered ? '#ef4444' : isInActivePath ? '#ff3366' : '#334155'}
+                              strokeWidth={isInActivePath ? 1.4 : 0.8}
+                            />
+                            <text
+                              y="3.5"
+                              fill={isSevered ? '#fca5a5' : isInActivePath ? '#ff3366' : '#94a3b8'}
+                              fontSize="8"
+                              fontWeight="bold"
+                              textAnchor="middle"
+                            >
+                              {relShort}
+                            </text>
+                          </>
+                        );
+                      })()}
                     </g>
                   </g>
                 );
@@ -905,9 +934,9 @@ export default function AttackGraph3D({
                     {/* Outer Glow Halo if in Active Shortest Path */}
                     {isInActivePath && (
                       <circle
-                        r={32}
+                        r={34}
                         fill="none"
-                        stroke={isSource ? '#00f5d4' : strokeColor}
+                        stroke={isSource ? '#00f5d4' : isTarget ? '#ff3366' : strokeColor}
                         strokeWidth="1.5"
                         strokeDasharray="4,4"
                         filter="url(#neonGlow)"
@@ -937,38 +966,86 @@ export default function AttackGraph3D({
                       </text>
                     )}
 
-                    {/* Inner Node Type */}
-                    <text
-                      y="-3"
-                      fill={strokeColor}
-                      fontSize="7.5"
-                      fontWeight="bold"
-                      textAnchor="middle"
-                    >
-                      {node.type.slice(0, 5)}
-                    </text>
+                    {/* Clean Center Glyph inside Node */}
+                    {(() => {
+                      const glyph =
+                        node.id === 'node_entry_ble'
+                          ? 'BLE'
+                          : node.id === 'node_entry_http'
+                          ? 'HTTP'
+                          : node.id === 'node_entry_uart'
+                          ? 'UART'
+                          : node.id === 'node_entry_mqtt'
+                          ? 'MQTT'
+                          : node.id === 'node_vuln_overflow'
+                          ? '0-DAY'
+                          : node.id === 'node_vuln_http_auth_bypass'
+                          ? 'AUTH'
+                          : node.id === 'node_vuln_uboot_env'
+                          ? 'BOOT'
+                          : node.id === 'node_vuln_mqtt_wildcard'
+                          ? 'TOPIC'
+                          : node.id === 'node_priv_ble_daemon'
+                          ? 'UID:1002'
+                          : node.id === 'node_priv_web_user'
+                          ? 'UID:33'
+                          : node.id === 'node_priv_operator'
+                          ? 'UID:1000'
+                          : node.id === 'node_vuln_nvram_escalation'
+                          ? 'SUID'
+                          : node.id === 'node_bus_spi'
+                          ? 'SPI'
+                          : node.id === 'node_asset_root_shell'
+                          ? 'ROOT'
+                          : node.id === 'node_asset_bmc_flash'
+                          ? 'BMC'
+                          : node.id === 'node_asset_crypto_store'
+                          ? 'KEYS'
+                          : node.type.slice(0, 4);
 
-                    {/* Node Short Identifier */}
-                    <text
-                      y="9"
-                      fill="#ffffff"
-                      fontSize="7"
-                      fontWeight="bold"
-                      textAnchor="middle"
-                    >
-                      {node.id.replace('node_', '').slice(0, 7)}
-                    </text>
+                      return (
+                        <text
+                          y="4"
+                          fill={isSelected ? '#ffffff' : strokeColor}
+                          fontSize={glyph.length > 5 ? '7.5' : '9.5'}
+                          fontWeight="bold"
+                          textAnchor="middle"
+                        >
+                          {glyph}
+                        </text>
+                      );
+                    })()}
 
-                    {/* Node Descriptive Label below */}
-                    <text
-                      y="36"
-                      fill={isInActivePath ? '#ffffff' : '#94a3b8'}
-                      fontSize="9"
-                      fontWeight={isInActivePath ? 'bold' : 'normal'}
-                      textAnchor="middle"
-                    >
-                      {node.label.length > 24 ? `${node.label.slice(0, 24)}...` : node.label}
-                    </text>
+                    {/* Node Descriptive Label Pill below circle */}
+                    {(() => {
+                      const labelText =
+                        node.label.length > 22 ? `${node.label.slice(0, 20)}...` : node.label;
+                      const pillW = Math.max(88, labelText.length * 6.2 + 16);
+                      return (
+                        <g transform="translate(0, 26)">
+                          <rect
+                            x={-pillW / 2}
+                            y="0"
+                            width={pillW}
+                            height="18"
+                            rx="4"
+                            fill="#06090e"
+                            stroke={isSelected ? '#00f5d4' : isInActivePath ? strokeColor : '#1e293b'}
+                            strokeWidth={isSelected ? 1.5 : 1}
+                            opacity="0.95"
+                          />
+                          <text
+                            y="12"
+                            fill={isInActivePath ? '#ffffff' : '#94a3b8'}
+                            fontSize="8.5"
+                            fontWeight={isInActivePath ? 'bold' : 'normal'}
+                            textAnchor="middle"
+                          >
+                            {labelText}
+                          </text>
+                        </g>
+                      );
+                    })()}
                   </g>
                 );
               })}
@@ -1365,7 +1442,12 @@ export default function AttackGraph3D({
 
       {/* Multi-Path Comparison Matrix Modal */}
       {showMatrixModal && dijkstraResult && dijkstraResult.rankedPaths && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+        <div
+          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowMatrixModal(false);
+          }}
+        >
           <div className="glass-panel max-w-5xl w-full rounded-2xl border border-cyber-border bg-cyber-bg/95 p-6 space-y-5 shadow-2xl overflow-y-auto max-h-[90vh]">
             <div className="flex items-center justify-between border-b border-cyber-border/60 pb-3">
               <div className="flex items-center gap-2.5">
@@ -1383,7 +1465,8 @@ export default function AttackGraph3D({
               </div>
               <button
                 onClick={() => setShowMatrixModal(false)}
-                className="p-1.5 rounded-xl bg-cyber-surface hover:bg-cyber-card border border-cyber-border text-cyber-muted hover:text-white"
+                className="p-2 rounded-xl bg-cyber-surface hover:bg-cyber-card border border-cyber-border text-cyber-muted hover:text-white transition-all cursor-pointer"
+                title="Close Modal (Esc)"
               >
                 <X className="w-5 h-5" />
               </button>

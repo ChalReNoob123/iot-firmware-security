@@ -17,6 +17,7 @@ export default function DigitalTwin3DBoard() {
   const [visualMode, setVisualMode] = useState<'CYBER' | 'THERMAL'>('CYBER');
   const [cameraPreset, setCameraPreset] = useState<'ISOMETRIC' | 'TOP_DOWN' | 'SOC_MACRO' | 'RF_VECTOR'>('ISOMETRIC');
   const [selectedChipId, setSelectedChipId] = useState<string>('mcu');
+  const [showTelemetry, setShowTelemetry] = useState<boolean>(true);
 
   const chips: Record<string, ChipInfo> = {
     mcu: {
@@ -87,11 +88,13 @@ export default function DigitalTwin3DBoard() {
     targetCamLook: THREE.Vector3;
     visualMode: 'CYBER' | 'THERMAL';
     selectedChipId: string;
+    cameraPreset: string;
   }>({
     targetCamPos: new THREE.Vector3(0, 8, 11),
     targetCamLook: new THREE.Vector3(0, 0, 0),
     visualMode: 'CYBER',
-    selectedChipId: 'mcu'
+    selectedChipId: 'mcu',
+    cameraPreset: 'ISOMETRIC'
   });
 
   // Sync state to ref
@@ -105,6 +108,7 @@ export default function DigitalTwin3DBoard() {
 
   // Handle camera presets
   useEffect(() => {
+    sceneStateRef.current.cameraPreset = cameraPreset;
     if (cameraPreset === 'ISOMETRIC') {
       sceneStateRef.current.targetCamPos.set(0, 8, 11);
       sceneStateRef.current.targetCamLook.set(0, 0, 0);
@@ -411,7 +415,7 @@ export default function DigitalTwin3DBoard() {
       const targetPos = state.targetCamPos;
       const targetLook = state.targetCamLook;
 
-      if (isHovering && cameraPreset === 'ISOMETRIC') {
+      if (isHovering && state.cameraPreset === 'ISOMETRIC') {
         camera.position.x += (targetPos.x + mouseX * 1.5 - camera.position.x) * 0.05;
         camera.position.y += (targetPos.y + mouseY * 1.0 - camera.position.y) * 0.05;
         camera.position.z += (targetPos.z - camera.position.z) * 0.05;
@@ -485,19 +489,28 @@ export default function DigitalTwin3DBoard() {
 
     const handleResize = () => {
       if (!container) return;
-      const w = container.clientWidth;
-      const h = container.clientHeight;
+      const w = container.clientWidth || 800;
+      const h = container.clientHeight || 520;
+      if (w === 0 || h === 0) return;
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
       renderer.setSize(w, h);
     };
 
+    const resizeObserver = new ResizeObserver(() => {
+      handleResize();
+    });
+    resizeObserver.observe(container);
     window.addEventListener('resize', handleResize);
 
+    const timer = setTimeout(handleResize, 60);
+
     return () => {
+      clearTimeout(timer);
       container.removeEventListener('mousemove', handleMouseMove);
       container.removeEventListener('mouseleave', handleMouseLeave);
       container.removeEventListener('click', handleClick);
+      resizeObserver.disconnect();
       window.removeEventListener('resize', handleResize);
       cancelAnimationFrame(animId);
       if (domElement.parentNode) {
@@ -505,28 +518,35 @@ export default function DigitalTwin3DBoard() {
       }
       renderer.dispose();
     };
-  }, [cameraPreset]);
+  }, []);
 
   return (
-    <div className="w-full flex flex-col lg:flex-row gap-4 font-mono">
+    <div className="w-full flex flex-col xl:flex-row gap-5 font-mono">
       {/* 3D Board Canvas */}
-      <div className="flex-1 glass-panel p-4 rounded-2xl relative min-h-[460px] overflow-hidden border border-cyber-cyan/30 flex flex-col">
+      <div className="flex-1 min-w-0 bg-void-950/90 rounded-2xl relative min-h-[560px] lg:min-h-[640px] overflow-hidden border border-cyber-cyan/40 flex flex-col shadow-2xl backdrop-blur-xl p-4">
         {/* Top Controls Bar */}
-        <div className="flex flex-wrap items-center justify-between gap-2 z-10 mb-2">
-          <div className="flex items-center gap-2">
-            <span className={`w-2.5 h-2.5 rounded-full ${visualMode === 'THERMAL' ? 'bg-orange-500 animate-ping' : 'bg-cyber-cyan animate-pulse'}`} />
+        <div className="flex flex-wrap items-center justify-between gap-3 z-10 mb-3 border-b border-zinc-800/60 pb-3">
+          <div className="flex items-center gap-2.5">
+            <span
+              className={`w-2.5 h-2.5 rounded-full ${
+                visualMode === 'THERMAL' ? 'bg-orange-500 animate-ping' : 'bg-cyber-cyan animate-pulse'
+              }`}
+            />
             <span className="text-xs font-bold text-white tracking-wider">
               {visualMode === 'THERMAL' ? 'FLIR INFRARED THERMAL TELEMETRY' : '3D HARDWARE DIGITAL TWIN'}
             </span>
+            <span className="text-xs text-zinc-500 hidden sm:inline">&bull; 60 FPS INTERACTIVE</span>
           </div>
 
           <div className="flex items-center gap-2">
             {/* Visual Mode Switcher */}
-            <div className="flex items-center bg-cyber-bg/80 p-0.5 rounded-lg border border-cyber-border text-[11px]">
+            <div className="flex items-center bg-void-900/90 p-0.5 rounded-lg border border-zinc-700/60 text-[11px]">
               <button
                 onClick={() => setVisualMode('CYBER')}
                 className={`px-2.5 py-1 rounded transition-all font-bold ${
-                  visualMode === 'CYBER' ? 'bg-cyber-cyan text-cyber-bg shadow-[0_0_8px_rgba(0,245,212,0.4)]' : 'text-slate-400 hover:text-white'
+                  visualMode === 'CYBER'
+                    ? 'bg-cyber-cyan text-cyber-bg shadow-[0_0_8px_rgba(0,245,212,0.4)]'
+                    : 'text-slate-400 hover:text-white'
                 }`}
               >
                 Cyber Bus
@@ -534,7 +554,9 @@ export default function DigitalTwin3DBoard() {
               <button
                 onClick={() => setVisualMode('THERMAL')}
                 className={`px-2.5 py-1 rounded transition-all font-bold ${
-                  visualMode === 'THERMAL' ? 'bg-gradient-to-r from-orange-500 to-rose-500 text-white shadow-[0_0_8px_rgba(249,115,22,0.5)]' : 'text-slate-400 hover:text-white'
+                  visualMode === 'THERMAL'
+                    ? 'bg-gradient-to-r from-orange-500 to-rose-500 text-white shadow-[0_0_8px_rgba(249,115,22,0.5)]'
+                    : 'text-slate-400 hover:text-white'
                 }`}
               >
                 FLIR Thermal
@@ -542,51 +564,61 @@ export default function DigitalTwin3DBoard() {
             </div>
 
             {/* Camera View Preset Switcher */}
-            <div className="hidden sm:flex items-center bg-cyber-bg/80 p-0.5 rounded-lg border border-cyber-border text-[11px]">
-              <button
-                onClick={() => setCameraPreset('ISOMETRIC')}
-                className={`px-2 py-1 rounded transition-all ${cameraPreset === 'ISOMETRIC' ? 'bg-cyber-surface text-cyber-cyan font-bold' : 'text-slate-400'}`}
-              >
-                Iso
-              </button>
-              <button
-                onClick={() => setCameraPreset('TOP_DOWN')}
-                className={`px-2 py-1 rounded transition-all ${cameraPreset === 'TOP_DOWN' ? 'bg-cyber-surface text-cyber-cyan font-bold' : 'text-slate-400'}`}
-              >
-                Top
-              </button>
-              <button
-                onClick={() => setCameraPreset('SOC_MACRO')}
-                className={`px-2 py-1 rounded transition-all ${cameraPreset === 'SOC_MACRO' ? 'bg-cyber-surface text-cyber-cyan font-bold' : 'text-slate-400'}`}
-              >
-                SoC
-              </button>
-              <button
-                onClick={() => setCameraPreset('RF_VECTOR')}
-                className={`px-2 py-1 rounded transition-all ${cameraPreset === 'RF_VECTOR' ? 'bg-cyber-surface text-cyber-cyan font-bold' : 'text-slate-400'}`}
-              >
-                RF
-              </button>
+            <div className="hidden sm:flex items-center bg-void-900/90 p-0.5 rounded-lg border border-zinc-700/60 text-[11px]">
+              {[
+                { id: 'ISOMETRIC', label: 'Iso' },
+                { id: 'TOP_DOWN', label: 'Top' },
+                { id: 'SOC_MACRO', label: 'SoC' },
+                { id: 'RF_VECTOR', label: 'RF' }
+              ].map((cam) => (
+                <button
+                  key={cam.id}
+                  onClick={() => setCameraPreset(cam.id as any)}
+                  className={`px-2.5 py-1 rounded transition-all ${
+                    cameraPreset === cam.id
+                      ? 'bg-cyber-surface text-cyber-cyan font-bold shadow-sm'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  {cam.label}
+                </button>
+              ))}
             </div>
+
+            {/* Telemetry Toggle Button */}
+            <button
+              onClick={() => setShowTelemetry(!showTelemetry)}
+              className={`px-2.5 py-1 rounded-lg border text-[11px] font-bold transition-all flex items-center gap-1.5 ${
+                showTelemetry
+                  ? 'bg-void-800 border-zinc-700 text-slate-300 hover:text-white'
+                  : 'bg-cyber-cyan/15 border-cyber-cyan/40 text-cyber-cyan'
+              }`}
+              title={showTelemetry ? 'Hide Telemetry Drawer' : 'Show Telemetry Drawer'}
+            >
+              {showTelemetry ? 'Hide Telemetry' : 'Show Telemetry'}
+            </button>
           </div>
         </div>
 
         {/* 3D Viewport */}
-        <div ref={containerRef} className="flex-1 w-full h-full min-h-[380px] cursor-pointer" />
+        <div
+          ref={containerRef}
+          className="flex-1 w-full min-h-[480px] h-[520px] lg:h-[620px] cursor-grab active:cursor-grabbing relative rounded-xl overflow-hidden bg-void-950/80"
+        />
 
         {/* Overlay Chip Quick-Selector Buttons & Telemetry Bar */}
-        <div className="absolute bottom-4 left-4 right-4 z-10 flex flex-wrap items-center justify-between gap-2 pointer-events-none">
+        <div className="absolute bottom-6 left-6 right-6 z-10 flex flex-wrap items-center justify-between gap-2 pointer-events-none">
           <div className="flex flex-wrap gap-2 pointer-events-auto">
             {Object.values(chips).map((chip) => (
               <button
                 key={chip.id}
                 onClick={() => setSelectedChipId(chip.id)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 backdrop-blur-md ${
                   selectedChipId === chip.id
                     ? 'bg-cyber-cyan text-cyber-bg shadow-[0_0_12px_rgba(0,245,212,0.5)]'
                     : chip.status === 'TAINTED'
-                    ? 'bg-cyber-rose/20 text-cyber-rose border border-cyber-rose/40'
-                    : 'bg-cyber-surface/90 text-slate-300 border border-cyber-border hover:border-cyber-cyan/50'
+                    ? 'bg-cyber-rose/25 text-cyber-rose border border-cyber-rose/50'
+                    : 'bg-void-900/90 text-slate-300 border border-zinc-700/60 hover:border-cyber-cyan/50'
                 }`}
               >
                 <span
@@ -599,17 +631,20 @@ export default function DigitalTwin3DBoard() {
             ))}
           </div>
 
-          <div className="text-[10px] text-cyber-muted bg-cyber-bg/80 px-2.5 py-1 rounded border border-cyber-border/40 backdrop-blur-sm pointer-events-auto">
+          <div className="text-[10px] text-zinc-400 bg-void-950/80 px-2.5 py-1 rounded-lg border border-zinc-800 backdrop-blur-sm pointer-events-auto">
             Click chips to inspect &bull; Drag to tilt
           </div>
         </div>
       </div>
 
       {/* Selected Chip Real-Time Telemetry Inspector */}
-      {selectedChip && (
-        <div className="w-full lg:w-84 glass-panel p-5 rounded-2xl flex flex-col gap-3 border border-cyber-border">
-          <div className="flex items-center justify-between border-b border-cyber-border/40 pb-2">
-            <span className="text-xs font-bold text-white">HARDWARE CHIP TELEMETRY</span>
+      {showTelemetry && selectedChip && (
+        <div className="w-full xl:w-[400px] shrink-0 bg-void-900/95 rounded-2xl p-5 flex flex-col gap-3.5 border border-zinc-800 shadow-2xl backdrop-blur-xl">
+          <div className="flex items-center justify-between border-b border-zinc-800 pb-2.5">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-cyber-cyan animate-pulse" />
+              <span className="text-xs font-bold text-white tracking-wider">HARDWARE CHIP TELEMETRY</span>
+            </div>
             <span
               className={`px-2 py-0.5 rounded text-[10px] font-bold ${
                 selectedChip.status === 'TAINTED'
@@ -624,20 +659,24 @@ export default function DigitalTwin3DBoard() {
           <div>
             <div className="flex items-center justify-between">
               <h4 className="text-sm font-bold text-cyber-cyan">{selectedChip.name}</h4>
-              <span className={`text-xs font-bold font-mono ${selectedChip.tempC > 80 ? 'text-cyber-rose animate-pulse' : 'text-orange-400'}`}>
+              <span
+                className={`text-xs font-bold font-mono ${
+                  selectedChip.tempC > 80 ? 'text-cyber-rose animate-pulse' : 'text-orange-400'
+                }`}
+              >
                 {selectedChip.tempC}°C
               </span>
             </div>
-            <p className="text-[11px] text-cyber-muted mt-0.5 leading-tight">{selectedChip.role}</p>
+            <p className="text-[11px] text-zinc-400 mt-1 leading-relaxed">{selectedChip.role}</p>
           </div>
 
           {/* Thermal meter bar */}
-          <div className="space-y-1">
-            <div className="flex justify-between text-[10px] text-slate-400 font-mono">
+          <div className="space-y-1.5 pt-1">
+            <div className="flex justify-between text-[10px] text-zinc-400 font-mono">
               <span>THERMAL LOAD</span>
               <span>{Math.round((selectedChip.tempC / 100) * 100)}% TJMax</span>
             </div>
-            <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+            <div className="w-full h-2 bg-void-950 rounded-full overflow-hidden border border-zinc-800">
               <div
                 className={`h-full transition-all duration-500 ${
                   selectedChip.tempC > 80
@@ -649,13 +688,24 @@ export default function DigitalTwin3DBoard() {
             </div>
           </div>
 
-          <div className="space-y-2 pt-2 border-t border-cyber-border/30 text-xs flex-1 overflow-y-auto">
+          <div className="space-y-2 pt-2 border-t border-zinc-800/80 text-xs flex-1 overflow-y-auto max-h-[440px] scrollbar-thin">
             {Object.entries(selectedChip.telemetry).map(([key, val]) => {
-              const isAlert = val.includes('Fault') || val.includes('Corrupted') || val.includes('CRITICAL') || val.includes('Hijacked');
+              const isAlert =
+                val.includes('Fault') ||
+                val.includes('Corrupted') ||
+                val.includes('CRITICAL') ||
+                val.includes('Hijacked');
               return (
-                <div key={key} className="p-2.5 rounded bg-cyber-surface/70 border border-cyber-border/40">
-                  <div className="text-[10px] text-cyber-muted tracking-wider">{key.toUpperCase()}</div>
-                  <div className={`font-mono text-[11px] mt-0.5 ${isAlert ? 'text-cyber-rose font-bold' : 'text-slate-200'}`}>
+                <div
+                  key={key}
+                  className="p-3 rounded-xl bg-void-950/70 border border-zinc-800/80 hover:border-zinc-700 transition-colors"
+                >
+                  <div className="text-[10px] text-zinc-400 tracking-wider font-semibold">{key.toUpperCase()}</div>
+                  <div
+                    className={`font-mono text-[11px] mt-1 break-all ${
+                      isAlert ? 'text-cyber-rose font-bold' : 'text-zinc-200'
+                    }`}
+                  >
                     {val}
                   </div>
                 </div>

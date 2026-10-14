@@ -44,6 +44,13 @@ export default function GlobalNav() {
 
         {/* Desktop Navigation Links */}
         <div className="hidden md:flex items-center gap-1 lg:gap-2 text-xs font-mono">
+          <Link
+            href="/vulnerabilities"
+            className="px-3 py-1.5 rounded-full text-neon-crimson hover:text-white hover:bg-neon-crimson/15 transition-all flex items-center gap-1.5 font-bold border border-neon-crimson/30 shadow-[0_0_10px_rgba(255,0,85,0.2)]"
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-neon-crimson animate-pulse" />
+            <span>Vulnerabilities</span>
+          </Link>
           <a
             href="#dropzone"
             className="px-3 py-1.5 rounded-full text-zinc-300 hover:text-white hover:bg-zinc-800/60 transition-colors"
@@ -107,6 +114,19 @@ export default function GlobalNav() {
       {/* Mobile Drawer Menu */}
       {mobileMenuOpen && (
         <div className="pointer-events-auto md:hidden fixed inset-x-4 top-20 bg-void-900/95 backdrop-blur-2xl border border-zinc-border rounded-2xl p-4 shadow-2xl flex flex-col gap-2 font-mono text-xs z-50">
+          <Link
+            href="/vulnerabilities"
+            onClick={() => setMobileMenuOpen(false)}
+            className="p-2.5 rounded-xl text-neon-crimson bg-neon-crimson/10 border border-neon-crimson/30 hover:bg-neon-crimson/20 flex items-center justify-between"
+          >
+            <div className="flex items-center gap-2 font-bold">
+              <span className="w-2 h-2 rounded-full bg-neon-crimson animate-pulse" />
+              <span>Vulnerability Intelligence</span>
+            </div>
+            <span className="text-[10px] px-2 py-0.5 rounded bg-neon-crimson text-white font-black">
+              LIVE KEV
+            </span>
+          </Link>
           <a
             href="#dropzone"
             onClick={() => setMobileMenuOpen(false)}

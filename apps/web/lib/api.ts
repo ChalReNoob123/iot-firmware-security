@@ -5,6 +5,8 @@ import {
   SymbolicTaintResult,
   EmulatorCrashSnapshot,
   AttackGraphData,
+  AttackGraphNode,
+  AttackGraphEdge,
   SBOMComponent,
   ComplianceScorecard,
   AttestationRecord,
@@ -115,6 +117,233 @@ export async function fetchDevices(): Promise<DeviceProfile[]> {
     }
   ];
 }
+
+export const CANONICAL_ATTACK_GRAPH_NODES: AttackGraphNode[] = [
+  // Tier 0: Ingress Layer
+  {
+    id: 'node_entry_ble',
+    label: 'BLE GATT Ingress (UUID 0xFFE0)',
+    type: 'ENTRY_POINT',
+    severity: 'CRITICAL',
+    properties: {
+      name: 'Wireless Bluetooth Low Energy GATT Server',
+      protocol: 'BLE_4.2',
+      uuid: '0xFFE0',
+      port: 0,
+      description: 'Unauthenticated radio packet reception on 2.4GHz FHSS. Direct memory ingestion into ble_gatewayd.'
+    }
+  },
+  {
+    id: 'node_entry_http',
+    label: 'Mini-Web HTTP Service (Port 80)',
+    type: 'ENTRY_POINT',
+    severity: 'HIGH',
+    properties: {
+      name: 'Mini-Web Embedded HTTP Daemon',
+      protocol: 'HTTP_1.1',
+      port: 80,
+      description: 'Internet-facing HTTP administration endpoint handling cookie verification and CGI invocations.'
+    }
+  },
+  {
+    id: 'node_entry_uart',
+    label: 'Hardware UART Serial Console',
+    type: 'ENTRY_POINT',
+    severity: 'MEDIUM',
+    properties: {
+      name: 'UART Physical Test Pads',
+      protocol: 'SERIAL_TTL',
+      baudRate: 115200,
+      description: 'Direct physical PCB access to U-Boot interactive prompt during hardware boot countdown.'
+    }
+  },
+  {
+    id: 'node_entry_mqtt',
+    label: 'MQTT Cloud Telemetry Ingress',
+    type: 'ENTRY_POINT',
+    severity: 'HIGH',
+    properties: {
+      name: 'MQTT Cloud Ingress Broker',
+      protocol: 'MQTT_TLS',
+      port: 8883,
+      description: 'Mutual TLS telemetry client subscribed to wildcard command topics.'
+    }
+  },
+  // Tier 1: Ingress Vulnerabilities
+  {
+    id: 'node_vuln_overflow',
+    label: 'Zero-Day BLE Stack Overflow (SF-ZERO-2026-001)',
+    type: 'VULNERABILITY',
+    severity: 'CRITICAL',
+    properties: {
+      name: 'Zero-Day Unchecked Buffer in parse_ble_advertisement_packet()',
+      cve: 'CVE-2026-9042',
+      cvss: 9.8,
+      epss: 0.942,
+      cwe: 'CWE-121: Stack-based Buffer Overflow',
+      emb3dRef: 'EMB3D-T0014: Unchecked Buffer in Radio Protocol Parser',
+      description: 'Zero-day unbounded memcpy (1024 bytes into 256-byte stack frame) corrupting $lr register.'
+    }
+  },
+  {
+    id: 'node_vuln_http_auth_bypass',
+    label: 'HTTP Session Cookie Auth Bypass (CVE-2024-21887)',
+    type: 'VULNERABILITY',
+    severity: 'HIGH',
+    properties: {
+      name: 'Predictable Pseudo-Random Session Cookie Generation',
+      cve: 'CVE-2024-21887',
+      cvss: 8.8,
+      epss: 0.824,
+      cwe: 'CWE-287: Improper Authentication',
+      emb3dRef: 'EMB3D-T0003: Insecure Session Management',
+      description: 'Predictable PRNG seed allows remote attackers to forge administrative sessions.'
+    }
+  },
+  {
+    id: 'node_vuln_uboot_env',
+    label: 'U-Boot Bootargs Parameter Tampering',
+    type: 'VULNERABILITY',
+    severity: 'MEDIUM',
+    properties: {
+      name: 'U-Boot Interactive Autoboot Escape',
+      cvss: 6.8,
+      epss: 0.18,
+      cwe: 'CWE-284: Improper Access Control',
+      emb3dRef: 'EMB3D-T0019: Bootloader Console Escape',
+      description: 'Unprotected 3-second boot delay allows interrupting autoboot to append init=/bin/sh.'
+    }
+  },
+  {
+    id: 'node_vuln_mqtt_wildcard',
+    label: 'MQTT Wildcard Command Injection (CVE-2026-9043)',
+    type: 'VULNERABILITY',
+    severity: 'HIGH',
+    properties: {
+      name: 'MQTT Wildcard Topic Message Parsing Injection',
+      cve: 'CVE-2026-9043',
+      cvss: 9.4,
+      epss: 0.91,
+      cwe: 'CWE-78: OS Command Injection',
+      emb3dRef: 'EMB3D-T0012: Insecure Cloud Message Handling',
+      description: 'Cloud command payload interpreted without shell sanitization.'
+    }
+  },
+  // Tier 2: Privilege Contexts & Sandboxes
+  {
+    id: 'node_priv_ble_daemon',
+    label: 'ble_gatewayd Daemon Sandbox (UID 1002)',
+    type: 'PRIVILEGE',
+    severity: 'HIGH',
+    properties: {
+      name: 'ble_gatewayd Process Execution Context',
+      uid: 1002,
+      description: 'Low-privilege Linux process handling radio communications, granted NVRAM helper access.'
+    }
+  },
+  {
+    id: 'node_priv_web_user',
+    label: 'www-data Web Worker (UID 33)',
+    type: 'PRIVILEGE',
+    severity: 'HIGH',
+    properties: {
+      name: 'www-data Web Server Execution Context',
+      uid: 33,
+      description: 'Standard unprivileged web server process with access to CGI executables.'
+    }
+  },
+  {
+    id: 'node_priv_operator',
+    label: 'operator Serial Shell (UID 1000)',
+    type: 'PRIVILEGE',
+    severity: 'MEDIUM',
+    properties: {
+      name: 'operator Maintenance Account Context',
+      uid: 1000,
+      description: 'Restricted maintenance shell with physical serial access.'
+    }
+  },
+  // Tier 3: Escalation & Hardware Bus
+  {
+    id: 'node_vuln_nvram_escalation',
+    label: 'SUID /bin/nvram_set Command Injection (CVE-2024-38912)',
+    type: 'VULNERABILITY',
+    severity: 'HIGH',
+    properties: {
+      name: 'SUID Helper Command Injection in /bin/nvram_set',
+      cve: 'CVE-2024-38912',
+      cvss: 8.4,
+      epss: 0.78,
+      cwe: 'CWE-78: OS Command Injection',
+      emb3dRef: 'EMB3D-T0022: Privilege Escalation via SUID Binary',
+      description: 'SUID binary executes popen() with attacker-controlled arguments as UID 0 root.'
+    }
+  },
+  {
+    id: 'node_bus_spi',
+    label: 'Hardware SPI Bus (/dev/spidev0.0)',
+    type: 'PERIPHERAL',
+    severity: 'HIGH',
+    properties: {
+      name: 'Hardware Serial Peripheral Interface (SPI) Bus',
+      bus: 'SPI',
+      deviceNode: '/dev/spidev0.0',
+      description: 'Physical SPI memory bus directly wired to NOR flash memory and BMC controller.'
+    }
+  },
+  // Tier 4: Target Assets
+  {
+    id: 'node_asset_root_shell',
+    label: 'Full Root Shell & Kernel Control (UID 0)',
+    type: 'ASSET',
+    severity: 'CRITICAL',
+    properties: {
+      name: 'Interactive Linux Root Shell (UID 0)',
+      impact: 'MAXIMUM_SYSTEM_COMPROMISE',
+      description: 'Complete arbitrary kernel code execution, persistent rootkit installation, and memory reading.'
+    }
+  },
+  {
+    id: 'node_asset_bmc_flash',
+    label: 'ASPEED BMC Firmware Flash Chip',
+    type: 'ASSET',
+    severity: 'CRITICAL',
+    properties: {
+      name: 'ASPEED AST2600 Baseboard Management Controller',
+      impact: 'PERMANENT_HARDWARE_SUBVERSION',
+      description: 'Permanent out-of-band hardware backdoor that survives operating system re-flashing.'
+    }
+  },
+  {
+    id: 'node_asset_crypto_store',
+    label: 'Device TLS Cryptographic Keystore',
+    type: 'ASSET',
+    severity: 'HIGH',
+    properties: {
+      name: 'Device Identity Private Key Keystore (/etc/ssl/gateway.key)',
+      impact: 'FLEET_WIDE_IMPERSONATION',
+      description: 'Extraction of master device credentials allowing rogue client TLS fleet impersonation.'
+    }
+  }
+];
+
+export const CANONICAL_ATTACK_GRAPH_EDGES: AttackGraphEdge[] = [
+  { id: 'e_ble_overflow', source: 'node_entry_ble', target: 'node_vuln_overflow', relationship: 'EXPOSES', isInShortestAttackPath: true, exploitConfidence: 0.98, properties: { weight: 0.12, confidence: 0.98 } },
+  { id: 'e_http_auth_bypass', source: 'node_entry_http', target: 'node_vuln_http_auth_bypass', relationship: 'EXPOSES', isInShortestAttackPath: false, exploitConfidence: 0.92, properties: { weight: 0.28, confidence: 0.92 } },
+  { id: 'e_uart_uboot', source: 'node_entry_uart', target: 'node_vuln_uboot_env', relationship: 'EXPOSES', isInShortestAttackPath: false, exploitConfidence: 0.85, properties: { weight: 1.25, confidence: 0.85 } },
+  { id: 'e_mqtt_wildcard', source: 'node_entry_mqtt', target: 'node_vuln_mqtt_wildcard', relationship: 'EXPOSES', isInShortestAttackPath: false, exploitConfidence: 0.95, properties: { weight: 0.19, confidence: 0.95 } },
+  { id: 'e_overflow_ble_daemon', source: 'node_vuln_overflow', target: 'node_priv_ble_daemon', relationship: 'EXPLOITS', isInShortestAttackPath: true, exploitConfidence: 0.94, properties: { weight: 0.18, confidence: 0.94 } },
+  { id: 'e_auth_bypass_web_user', source: 'node_vuln_http_auth_bypass', target: 'node_priv_web_user', relationship: 'EXPLOITS', isInShortestAttackPath: false, exploitConfidence: 0.89, properties: { weight: 0.42, confidence: 0.89 } },
+  { id: 'e_uboot_operator', source: 'node_vuln_uboot_env', target: 'node_priv_operator', relationship: 'EXPLOITS', isInShortestAttackPath: false, exploitConfidence: 0.90, properties: { weight: 0.65, confidence: 0.90 } },
+  { id: 'e_mqtt_ble_daemon', source: 'node_vuln_mqtt_wildcard', target: 'node_priv_ble_daemon', relationship: 'EXPLOITS', isInShortestAttackPath: false, exploitConfidence: 0.92, properties: { weight: 0.22, confidence: 0.92 } },
+  { id: 'e_daemon_nvram_escalation', source: 'node_priv_ble_daemon', target: 'node_vuln_nvram_escalation', relationship: 'ESCALATES_TO', isInShortestAttackPath: true, exploitConfidence: 0.91, properties: { weight: 0.42, confidence: 0.91 } },
+  { id: 'e_web_nvram_escalation', source: 'node_priv_web_user', target: 'node_vuln_nvram_escalation', relationship: 'ESCALATES_TO', isInShortestAttackPath: false, exploitConfidence: 0.84, properties: { weight: 0.69, confidence: 0.84 } },
+  { id: 'e_nvram_root', source: 'node_vuln_nvram_escalation', target: 'node_asset_root_shell', relationship: 'COMPROMISES', isInShortestAttackPath: true, exploitConfidence: 0.96, properties: { weight: 0.76, confidence: 0.96 } },
+  { id: 'e_operator_root', source: 'node_priv_operator', target: 'node_asset_root_shell', relationship: 'COMPROMISES', isInShortestAttackPath: false, exploitConfidence: 0.78, properties: { weight: 1.50, confidence: 0.78 } },
+  { id: 'e_root_spi', source: 'node_asset_root_shell', target: 'node_bus_spi', relationship: 'ACCESSES_PERIPHERAL', isInShortestAttackPath: false, exploitConfidence: 0.99, properties: { weight: 0.85, confidence: 0.99 } },
+  { id: 'e_spi_bmc', source: 'node_bus_spi', target: 'node_asset_bmc_flash', relationship: 'ALLOWS_LATERAL_MOVE', isInShortestAttackPath: false, exploitConfidence: 0.95, properties: { weight: 1.00, confidence: 0.95 } },
+  { id: 'e_root_crypto', source: 'node_asset_root_shell', target: 'node_asset_crypto_store', relationship: 'EXFILTRATES', isInShortestAttackPath: false, exploitConfidence: 0.99, properties: { weight: 0.95, confidence: 0.99 } }
+];
 
 export async function fetchScanSession(scanId = 'scan_gw9842_arm_prod'): Promise<ScanSession> {
   try {
@@ -475,88 +704,13 @@ export async function fetchScanSession(scanId = 'scan_gw9842_arm_prod'): Promise
       aiSteeringGainRatio: 3.8
     },
     attackGraph: {
-      nodes: [
-        {
-          id: 'node_entry_ble',
-          label: 'BLE GATT Interface (0xFFE0)',
-          type: 'ENTRY_POINT',
-          severity: 'MEDIUM',
-          properties: {
-            name: 'Unauthenticated BLE Radio Ingress',
-            description: 'GATT Advertisement service exposed over Bluetooth Low Energy'
-          }
-        },
-        {
-          id: 'node_vuln_overflow',
-          label: 'Zero-Day Stack Overflow (SF-ZERO-2026-001)',
-          type: 'VULNERABILITY',
-          severity: 'CRITICAL',
-          properties: { name: 'BLE Packet Parser RCE', cvss: 9.8, epss: 0.94, emb3dRef: 'EMB3D-T0014' }
-        },
-        {
-          id: 'node_priv_daemon',
-          label: 'Low-Privilege Process Context',
-          type: 'PRIVILEGE',
-          severity: 'HIGH',
-          properties: { name: 'ble_gatewayd Daemon (UID: 1002)', description: 'Restricted sandbox execution context' }
-        },
-        {
-          id: 'node_vuln_nvram_escalation',
-          label: 'SUID Privilege Escalation (CVE-2024-38912)',
-          type: 'VULNERABILITY',
-          severity: 'HIGH',
-          properties: { name: 'Command Injection in /bin/nvram_set', cvss: 8.4, epss: 0.78 }
-        },
-        {
-          id: 'node_asset_root_shell',
-          label: 'Root Shell & Flash Control',
-          type: 'ASSET',
-          severity: 'CRITICAL',
-          properties: {
-            name: 'Complete Device Takeover',
-            description: 'Persistent arbitrary kernel code execution, secret extraction, and fleet lateral movement'
-          }
-        }
-      ],
-      edges: [
-        {
-          id: 'e1',
-          source: 'node_entry_ble',
-          target: 'node_vuln_overflow',
-          relationship: 'EXPOSES',
-          isInShortestAttackPath: true,
-          exploitConfidence: 0.98
-        },
-        {
-          id: 'e2',
-          source: 'node_vuln_overflow',
-          target: 'node_priv_daemon',
-          relationship: 'EXPLOITS',
-          isInShortestAttackPath: true,
-          exploitConfidence: 0.94
-        },
-        {
-          id: 'e3',
-          source: 'node_priv_daemon',
-          target: 'node_vuln_nvram_escalation',
-          relationship: 'ESCALATES_TO',
-          isInShortestAttackPath: true,
-          exploitConfidence: 0.89
-        },
-        {
-          id: 'e4',
-          source: 'node_vuln_nvram_escalation',
-          target: 'node_asset_root_shell',
-          relationship: 'COMPROMISES',
-          isInShortestAttackPath: true,
-          exploitConfidence: 0.95
-        }
-      ],
-      criticalAttackPathsCount: 1,
+      nodes: CANONICAL_ATTACK_GRAPH_NODES,
+      edges: CANONICAL_ATTACK_GRAPH_EDGES,
+      criticalAttackPathsCount: 3,
       shortestPathToRootCompromise: [
         'node_entry_ble',
         'node_vuln_overflow',
-        'node_priv_daemon',
+        'node_priv_ble_daemon',
         'node_vuln_nvram_escalation',
         'node_asset_root_shell'
       ]
@@ -1199,155 +1353,224 @@ export async function solveDijkstraShortestPath(
     console.warn('Shortest path API call failed, using client fallback:', e);
   }
 
-  // Client-side fallback computation
-  const isBleSevered = severedEdges.includes('e_ble_overflow');
-  if (isBleSevered) {
-    return {
-      sourceNodeId,
-      targetNodeId,
-      algorithm,
-      pathFound: false,
-      nodePath: [],
-      edgePath: [],
-      hopCount: 0,
-      totalResistanceCost: 0,
-      compositeRiskScore: 0,
-      executionTimeMs: 1.2,
-      nodesVisitedCount: 1,
-      relaxationSteps: [],
-      hops: [],
-      alternativePaths: [],
-      rankedPaths: [],
-      defenseEffectivenessPercent: 78.0,
-      mitigationAdvice: ['Primary BLE attack path successfully neutralized via virtual patch.']
-    };
+  // Client-side dynamic graph engine fallback
+  const nodeMap = new Map<string, AttackGraphNode>(
+    CANONICAL_ATTACK_GRAPH_NODES.map((n) => [n.id, n])
+  );
+
+  const activeEdges = CANONICAL_ATTACK_GRAPH_EDGES.filter(
+    (e) => !severedEdges.includes(e.id)
+  );
+
+  // Build Adjacency List
+  const adj = new Map<string, Array<{ target: string; edge: AttackGraphEdge }>>();
+  for (const edge of activeEdges) {
+    if (!adj.has(edge.source)) adj.set(edge.source, []);
+    adj.get(edge.source)!.push({ target: edge.target, edge });
   }
+
+  // Dijkstra / BFS shortest path search
+  const dist: Record<string, number> = {};
+  const parent: Record<string, { prevNode: string; edge: AttackGraphEdge } | null> = {};
+  const visited = new Set<string>();
+
+  for (const n of CANONICAL_ATTACK_GRAPH_NODES) {
+    dist[n.id] = Infinity;
+    parent[n.id] = null;
+  }
+  dist[sourceNodeId] = 0;
+
+  const relaxationSteps: DijkstraStepTrace[] = [];
+  let stepCounter = 0;
+
+  while (true) {
+    // Find unvisited node with minimum distance
+    let u: string | null = null;
+    let minD = Infinity;
+
+    for (const n of CANONICAL_ATTACK_GRAPH_NODES) {
+      if (!visited.has(n.id) && dist[n.id] < minD) {
+        minD = dist[n.id];
+        u = n.id;
+      }
+    }
+
+    if (!u || minD === Infinity || u === targetNodeId) break;
+    visited.add(u);
+
+    const neighbors = adj.get(u) || [];
+    for (const { target: v, edge } of neighbors) {
+      if (visited.has(v)) continue;
+
+      const edgeWeight = algorithm === 'BFS' ? 1.0 : (edge.properties?.weight ?? 0.5);
+      const newD = dist[u] + edgeWeight;
+
+      if (newD < dist[v]) {
+        stepCounter++;
+        relaxationSteps.push({
+          stepIndex: stepCounter,
+          currentNodeId: u,
+          currentNodeLabel: nodeMap.get(u)?.label || u,
+          evaluatingTargetId: v,
+          evaluatingTargetLabel: nodeMap.get(v)?.label || v,
+          edgeId: edge.id,
+          edgeWeight: Number(edgeWeight.toFixed(2)),
+          currentDistance: Number(dist[v] === Infinity ? 99.9 : dist[v].toFixed(2)),
+          newCalculatedDistance: Number(newD.toFixed(2)),
+          action: 'RELAXED'
+        });
+
+        dist[v] = newD;
+        parent[v] = { prevNode: u, edge };
+      }
+    }
+  }
+
+  const pathFound = dist[targetNodeId] < Infinity;
+
+  // Backtrack path
+  const nodePath: string[] = [];
+  const edgePath: string[] = [];
+  const hops: PathHopDetail[] = [];
+
+  if (pathFound) {
+    let curr = targetNodeId;
+    nodePath.unshift(curr);
+
+    const backEdgeList: AttackGraphEdge[] = [];
+    while (curr !== sourceNodeId) {
+      const p = parent[curr];
+      if (!p) break;
+      backEdgeList.unshift(p.edge);
+      nodePath.unshift(p.prevNode);
+      curr = p.prevNode;
+    }
+
+    let cumulative = 0;
+    backEdgeList.forEach((edge, idx) => {
+      edgePath.push(edge.id);
+      const fromNode = nodeMap.get(edge.source);
+      const toNode = nodeMap.get(edge.target);
+      const weight = edge.properties?.weight ?? 0.5;
+      cumulative += weight;
+
+      hops.push({
+        hopNumber: idx + 1,
+        fromNodeId: edge.source,
+        fromNodeLabel: fromNode?.label || edge.source,
+        toNodeId: edge.target,
+        toNodeLabel: toNode?.label || edge.target,
+        relationship: edge.relationship,
+        edgeId: edge.id,
+        exploitDifficulty: weight < 0.3 ? 'TRIVIAL' : weight < 0.8 ? 'MODERATE' : 'HARD',
+        hopCost: Number(weight.toFixed(2)),
+        cumulativeCost: Number(cumulative.toFixed(2)),
+        tacticalExplanation: `${edge.relationship} transition from ${fromNode?.label || edge.source} to ${toNode?.label || edge.target} (Dijkstra edge weight: ${weight}).`
+      });
+    });
+  }
+
+  // Pre-configured multi-path alternatives for PRD 5.3 matrix
+  const allRanked: RankedAttackPath[] = [
+    {
+      rank: 1,
+      id: 'path_rank_1_ble',
+      name: 'Zero-Click BLE Ingress Kill-Chain',
+      ingressType: 'WIRELESS_RF',
+      nodePath: ['node_entry_ble', 'node_vuln_overflow', 'node_priv_ble_daemon', 'node_vuln_nvram_escalation', 'node_asset_root_shell'],
+      edgePath: ['e_ble_overflow', 'e_overflow_ble_daemon', 'e_daemon_nvram_escalation', 'e_nvram_root'],
+      hopCount: 4,
+      resistanceCost: 1.48,
+      riskScore: 9.8,
+      color: '#ff3366',
+      tacticalSummary: 'Unauthenticated BLE advertisement packet triggers buffer overflow in memcpy, elevating via SUID nvram_set to Root Shell.',
+      exploitPrimitive: 'Stack Buffer Overflow (Unbounded memcpy) + SUID popen() Injection',
+      mitigationStrategy: 'Enforce destination buffer bounds in parse_ble_advertisement_packet and drop ble_gatewayd capabilities.'
+    },
+    {
+      rank: 2,
+      id: 'path_rank_2_http',
+      name: 'Web Administrative Cookie Bypass Chain',
+      ingressType: 'NETWORK_TCP',
+      nodePath: ['node_entry_http', 'node_vuln_http_auth_bypass', 'node_priv_web_user', 'node_vuln_nvram_escalation', 'node_asset_root_shell'],
+      edgePath: ['e_http_auth_bypass', 'e_auth_bypass_web_user', 'e_web_nvram_escalation', 'e_nvram_root'],
+      hopCount: 4,
+      resistanceCost: 2.15,
+      riskScore: 8.8,
+      color: '#f59e0b',
+      tacticalSummary: 'Forged admin cookie triggers CGI command execution under www-data, leveraging SUID NVRAM helper to elevate to Root Shell.',
+      exploitPrimitive: 'Broken Authentication + Weak PRNG Session Token + SUID Helper',
+      mitigationStrategy: 'Migrate to cryptographically signed HMAC session tokens and restrict CGI execution permissions.'
+    },
+    {
+      rank: 3,
+      id: 'path_rank_3_uart',
+      name: 'Physical UART Serial Bootargs Hijack',
+      ingressType: 'PHYSICAL_UART',
+      nodePath: ['node_entry_uart', 'node_vuln_uboot_env', 'node_priv_operator', 'node_asset_root_shell'],
+      edgePath: ['e_uart_uboot', 'e_uboot_operator', 'e_operator_root'],
+      hopCount: 3,
+      resistanceCost: 3.40,
+      riskScore: 6.8,
+      color: '#a855f7',
+      tacticalSummary: 'Attacker interrupts U-Boot countdown on PCB test pads and passes init=/bin/sh to boot single-user root shell.',
+      exploitPrimitive: 'Bootloader Console Escape + Kernel Parameter Tampering',
+      mitigationStrategy: 'Disable autoboot countdown delay (bootdelay=0) and password-protect U-Boot interactive prompt.'
+    },
+    {
+      rank: 4,
+      id: 'path_rank_4_mqtt',
+      name: 'MQTT Cloud Ingress Command Injection',
+      ingressType: 'MQTT_TLS',
+      nodePath: ['node_entry_mqtt', 'node_vuln_mqtt_wildcard', 'node_priv_ble_daemon', 'node_vuln_nvram_escalation', 'node_asset_root_shell'],
+      edgePath: ['e_mqtt_wildcard', 'e_mqtt_ble_daemon', 'e_daemon_nvram_escalation', 'e_nvram_root'],
+      hopCount: 4,
+      resistanceCost: 1.59,
+      riskScore: 9.4,
+      color: '#00f5d4',
+      tacticalSummary: 'Attacker injects shell metacharacters through subscribed MQTT command topic, escaping into daemon context.',
+      exploitPrimitive: 'Wildcard Subscription Injection + Shell Metacharacter Tampering',
+      mitigationStrategy: 'Enforce strict schema validation on MQTT payloads and disallow wildcard subscriptions.'
+    }
+  ];
+
+  // Check how many of the 4 ingress paths are severed
+  const severedPathCount = allRanked.filter((p) =>
+    p.edgePath.some((eId) => severedEdges.includes(eId))
+  ).length;
+
+  const defensePercent = !pathFound
+    ? 100
+    : Math.min(95, Math.round((severedPathCount / allRanked.length) * 100));
+
+  const totalCost = hops.length > 0 ? hops[hops.length - 1].cumulativeCost : 0;
 
   return {
     sourceNodeId,
     targetNodeId,
     algorithm,
-    pathFound: true,
-    nodePath: ['node_entry_ble', 'node_vuln_overflow', 'node_priv_ble_daemon', 'node_vuln_nvram_escalation', 'node_asset_root_shell'],
-    edgePath: ['e_ble_overflow', 'e_overflow_ble_daemon', 'e_daemon_nvram_escalation', 'e_nvram_root'],
-    hopCount: 4,
-    totalResistanceCost: 1.48,
-    compositeRiskScore: 9.8,
-    executionTimeMs: 2.4,
-    nodesVisitedCount: 8,
-    relaxationSteps: [],
-    hops: [
-      {
-        hopNumber: 1,
-        fromNodeId: 'node_entry_ble',
-        fromNodeLabel: 'BLE GATT Ingress (UUID 0xFFE0)',
-        toNodeId: 'node_vuln_overflow',
-        toNodeLabel: 'Zero-Day Stack Overflow (SF-ZERO-2026-001)',
-        relationship: 'EXPOSES',
-        edgeId: 'e_ble_overflow',
-        exploitDifficulty: 'TRIVIAL',
-        hopCost: 0.12,
-        cumulativeCost: 0.12,
-        tacticalExplanation: 'Unauthenticated BLE advertisement packet is parsed directly by vulnerable memcpy handler.'
-      },
-      {
-        hopNumber: 2,
-        fromNodeId: 'node_vuln_overflow',
-        fromNodeLabel: 'Zero-Day Stack Overflow (SF-ZERO-2026-001)',
-        toNodeId: 'node_priv_ble_daemon',
-        toNodeLabel: 'Daemon Execution Context (ble_gatewayd)',
-        relationship: 'EXPLOITS',
-        edgeId: 'e_overflow_ble_daemon',
-        exploitDifficulty: 'TRIVIAL',
-        hopCost: 0.18,
-        cumulativeCost: 0.30,
-        tacticalExplanation: 'Stack buffer overflow hijacks $lr register, spawning shellcode under ble_gatewayd context (UID 1002).'
-      },
-      {
-        hopNumber: 3,
-        fromNodeId: 'node_priv_ble_daemon',
-        fromNodeLabel: 'Daemon Execution Context (ble_gatewayd)',
-        toNodeId: 'node_vuln_nvram_escalation',
-        toNodeLabel: 'SUID Command Injection (CVE-2024-38912)',
-        relationship: 'ESCALATES_TO',
-        edgeId: 'e_daemon_nvram_escalation',
-        exploitDifficulty: 'TRIVIAL',
-        hopCost: 0.42,
-        cumulativeCost: 0.72,
-        tacticalExplanation: 'ble_gatewayd invokes /bin/nvram_set with unsanitized parameters, triggering SUID injection.'
-      },
-      {
-        hopNumber: 4,
-        fromNodeId: 'node_vuln_nvram_escalation',
-        fromNodeLabel: 'SUID Command Injection (CVE-2024-38912)',
-        toNodeId: 'node_asset_root_shell',
-        toNodeLabel: 'Full Root Shell & Kernel Control (UID 0)',
-        relationship: 'COMPROMISES',
-        edgeId: 'e_nvram_root',
-        exploitDifficulty: 'TRIVIAL',
-        hopCost: 0.76,
-        cumulativeCost: 1.48,
-        tacticalExplanation: 'SUID popen("/bin/sh") executes payload as UID 0, delivering an interactive root shell.'
-      }
-    ],
-    bottleneckNodeId: 'node_vuln_overflow',
-    bottleneckNodeLabel: 'Zero-Day Stack Overflow (SF-ZERO-2026-001)',
-    alternativePaths: [
-      ['node_entry_http', 'node_vuln_http_auth_bypass', 'node_priv_web_user', 'node_vuln_nvram_escalation', 'node_asset_root_shell']
-    ],
-    rankedPaths: [
-      {
-        rank: 1,
-        id: 'path_rank_1_ble',
-        name: 'Zero-Click BLE Ingress Kill-Chain',
-        ingressType: 'WIRELESS_RF',
-        nodePath: ['node_entry_ble', 'node_vuln_overflow', 'node_priv_ble_daemon', 'node_vuln_nvram_escalation', 'node_asset_root_shell'],
-        edgePath: ['e_ble_overflow', 'e_overflow_ble_daemon', 'e_daemon_nvram_escalation', 'e_nvram_root'],
-        hopCount: 4,
-        resistanceCost: 1.48,
-        riskScore: 9.8,
-        color: '#ff3366',
-        tacticalSummary: 'Unauthenticated BLE advertisement packet triggers buffer overflow in memcpy, elevating via SUID nvram_set to Root Shell.',
-        exploitPrimitive: 'Stack Buffer Overflow (Unbounded memcpy) + SUID popen() Injection',
-        mitigationStrategy: 'Enforce destination buffer bounds in parse_ble_advertisement_packet and drop ble_gatewayd capabilities.'
-      },
-      {
-        rank: 2,
-        id: 'path_rank_2_http',
-        name: 'Web Administrative Cookie Bypass Chain',
-        ingressType: 'NETWORK_TCP',
-        nodePath: ['node_entry_http', 'node_vuln_http_auth_bypass', 'node_priv_web_user', 'node_vuln_nvram_escalation', 'node_asset_root_shell'],
-        edgePath: ['e_http_auth_bypass', 'e_auth_bypass_web_user', 'e_web_nvram_escalation', 'e_nvram_root'],
-        hopCount: 4,
-        resistanceCost: 2.15,
-        riskScore: 8.8,
-        color: '#f59e0b',
-        tacticalSummary: 'Forged admin cookie triggers CGI command execution under www-data, leveraging SUID NVRAM helper to elevate to Root Shell.',
-        exploitPrimitive: 'Broken Authentication + Weak PRNG Session Token + SUID Helper',
-        mitigationStrategy: 'Migrate to cryptographically signed HMAC session tokens and restrict CGI execution permissions.'
-      },
-      {
-        rank: 3,
-        id: 'path_rank_3_uart',
-        name: 'Physical UART Serial Bootargs Hijack',
-        ingressType: 'PHYSICAL_UART',
-        nodePath: ['node_entry_uart', 'node_vuln_uboot_env', 'node_priv_operator', 'node_asset_root_shell'],
-        edgePath: ['e_uart_uboot', 'e_uboot_operator', 'e_operator_root'],
-        hopCount: 3,
-        resistanceCost: 3.40,
-        riskScore: 6.8,
-        color: '#a855f7',
-        tacticalSummary: 'Attacker interrupts U-Boot countdown on PCB test pads and passes init=/bin/sh to boot single-user root shell.',
-        exploitPrimitive: 'Bootloader Console Escape + Kernel Parameter Tampering',
-        mitigationStrategy: 'Disable autoboot countdown delay (bootdelay=0) and password-protect U-Boot interactive prompt.'
-      }
-    ],
-    defenseEffectivenessPercent: isBleSevered ? 78.0 : 0.0,
-    mitigationAdvice: [
-      'Apply input boundary enforcement at parse_ble_advertisement_packet to break initial compromise.',
-      'Drop process privileges for daemons handling unauthenticated packet ingress to dedicated non-root UIDs.',
-      'Remove SUID permissions from /bin/nvram_set and restrict shell invocations via AppArmor / SELinux policies.'
-    ]
+    pathFound,
+    nodePath,
+    edgePath,
+    hopCount: hops.length,
+    totalResistanceCost: Number(totalCost.toFixed(2)),
+    compositeRiskScore: pathFound ? (nodeMap.get(sourceNodeId)?.severity === 'CRITICAL' ? 9.8 : 8.8) : 0,
+    executionTimeMs: 1.8,
+    nodesVisitedCount: visited.size,
+    relaxationSteps,
+    hops,
+    bottleneckNodeId: nodePath.length > 1 ? nodePath[1] : undefined,
+    bottleneckNodeLabel: nodePath.length > 1 ? nodeMap.get(nodePath[1])?.label : undefined,
+    alternativePaths: allRanked.filter((p) => !p.edgePath.some((eId) => severedEdges.includes(eId))).map((p) => p.nodePath),
+    rankedPaths: allRanked,
+    defenseEffectivenessPercent: defensePercent,
+    mitigationAdvice: !pathFound
+      ? ['Target asset is completely unreachably secure! Virtual patches severed all ingress paths.']
+      : [
+          'Enforce strict input bounds checking on the entry point parser.',
+          'Drop process privileges for unauthenticated daemons to non-root UID.',
+          'Strip SUID bit from /bin/nvram_set and lock down kernel capabilities.'
+        ]
   };
 }
 
@@ -1363,6 +1586,71 @@ export async function executeCypherQuery(query: string): Promise<CypherQueryResu
     if (res.ok) return await res.json();
   } catch (e) {
     console.warn('Cypher query API call failed, using client fallback:', e);
+  }
+
+  const isShortestPath = query.includes('shortestPath');
+  const isLateralMove = query.includes('SPI') || query.includes('BMC') || query.includes('ACCESSES_PERIPHERAL');
+  const isZeroDay = query.includes('EPSS') || query.includes('CRITICAL');
+
+  if (isLateralMove) {
+    return {
+      query,
+      executionTimeMs: 3.2,
+      matchedPathsCount: 1,
+      columns: ['CriticalAsset', 'HardwareBus', 'Hops', 'MaxRiskScore'],
+      records: [
+        {
+          CriticalAsset: 'ASPEED BMC Firmware Flash Chip',
+          HardwareBus: 'Hardware SPI Bus (/dev/spidev0.0)',
+          Hops: 6,
+          MaxRiskScore: 10.0
+        }
+      ],
+      highlightedPathNodeIds: [
+        'node_entry_ble',
+        'node_vuln_overflow',
+        'node_priv_ble_daemon',
+        'node_vuln_nvram_escalation',
+        'node_asset_root_shell',
+        'node_bus_spi',
+        'node_asset_bmc_flash'
+      ],
+      highlightedEdgeIds: [
+        'e_ble_overflow',
+        'e_overflow_ble_daemon',
+        'e_daemon_nvram_escalation',
+        'e_nvram_root',
+        'e_root_spi',
+        'e_spi_bmc'
+      ]
+    };
+  }
+
+  if (isZeroDay) {
+    return {
+      query,
+      executionTimeMs: 1.9,
+      matchedPathsCount: 2,
+      columns: ['IngressEndpoint', 'CVE', 'CVSS', 'EPSS', 'TargetedAsset'],
+      records: [
+        {
+          IngressEndpoint: 'BLE GATT (UUID 0xFFE0)',
+          CVE: 'CVE-2026-9042 (SF-ZERO-2026-001)',
+          CVSS: 9.8,
+          EPSS: '94.2%',
+          TargetedAsset: 'Full Root Shell (UID 0)'
+        },
+        {
+          IngressEndpoint: 'Mini-Web (Port 80)',
+          CVE: 'CVE-2024-21887',
+          CVSS: 8.8,
+          EPSS: '82.4%',
+          TargetedAsset: 'Full Root Shell (UID 0)'
+        }
+      ],
+      highlightedPathNodeIds: ['node_entry_ble', 'node_vuln_overflow', 'node_priv_ble_daemon', 'node_vuln_nvram_escalation', 'node_asset_root_shell'],
+      highlightedEdgeIds: ['e_ble_overflow', 'e_overflow_ble_daemon', 'e_daemon_nvram_escalation', 'e_nvram_root']
+    };
   }
 
   return {

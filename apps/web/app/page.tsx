@@ -2,7 +2,7 @@
 
 import React from 'react';
 import HeroSection from '@/components/hero/HeroSection';
-import CinematicVideoScrubberSection from '@/components/motion/CinematicVideoScrubberSection';
+import IndustrialVulnerabilityEngine from '@/components/vulnerability/IndustrialVulnerabilityEngine';
 import FirmwareDropzoneTerminal from '@/components/dropzone/FirmwareDropzoneTerminal';
 import BentoCapabilitiesGrid from '@/components/bento/BentoCapabilitiesGrid';
 import AttackBlastRadiusSimulator from '@/components/simulator/AttackBlastRadiusSimulator';
@@ -17,8 +17,8 @@ export default function LandingPage() {
       {/* Hero Section (Kinetic Typography & Spatial 3D SoC Chip) */}
       <HeroSection />
 
-      {/* Cinematic Hardware Execution Video Scrubber */}
-      <CinematicVideoScrubberSection />
+      {/* Industrial Real-World Vulnerability Detector & Exploit Call-Chain Engine */}
+      <IndustrialVulnerabilityEngine />
 
       {/* Interactive Firmware Dropzone (Tactile Simulation) */}
       <FirmwareDropzoneTerminal />

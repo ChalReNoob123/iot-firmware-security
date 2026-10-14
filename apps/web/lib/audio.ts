@@ -171,6 +171,42 @@ class CyberSoundEngine {
       osc.stop(this.ctx.currentTime + 0.02);
     } catch {}
   }
+
+  public playSuccess() {
+    this.playStageComplete();
+  }
+
+  public playBlip() {
+    this.playClick();
+  }
+
+  public playTick() {
+    this.playScanTick();
+  }
+
+  public playLaser() {
+    if (this.isMuted) return;
+    try {
+      this.initContext();
+      if (!this.ctx) return;
+
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(2400, this.ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(120, this.ctx.currentTime + 0.12);
+
+      gain.gain.setValueAtTime(0.08, this.ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.12);
+
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+
+      osc.start();
+      osc.stop(this.ctx.currentTime + 0.12);
+    } catch {}
+  }
 }
 
 export const cyberAudio = new CyberSoundEngine();

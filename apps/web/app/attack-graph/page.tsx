@@ -235,7 +235,7 @@ Knowledge Graph Engine: Neo4j Enterprise + Cypher v5
   }
 
   return (
-    <div className="flex flex-col gap-6 font-mono max-w-7xl mx-auto w-full">
+    <div className="flex flex-col gap-6 font-mono max-w-[1700px] mx-auto w-full">
       {/* Page Header */}
       <div className="glass-panel rounded-2xl p-5 border border-cyber-border/80 flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">

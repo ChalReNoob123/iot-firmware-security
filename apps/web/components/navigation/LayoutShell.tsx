@@ -33,7 +33,8 @@ import {
   LogOut,
   ArrowUpRight,
   ExternalLink,
-  Sparkles
+  Sparkles,
+  ShieldAlert
 } from 'lucide-react';
 
 interface Props {
@@ -59,6 +60,7 @@ const NAV_CATEGORIES: NavCategory[] = [
     title: 'CORE OPERATIONS',
     items: [
       { name: 'Dashboard', href: '/dashboard', icon: Activity, badge: 'LIVE', badgeColor: 'text-neon-cyan bg-neon-cyan/10 border-neon-cyan/30' },
+      { name: 'Vulnerability Tracker', href: '/vulnerabilities', icon: ShieldAlert, badge: 'KEV/ZERO', badgeColor: 'text-neon-crimson bg-neon-crimson/15 border-neon-crimson/40', ping: true },
       { name: 'Target Fleet', href: '/devices', icon: Server, badge: '3 DEV', badgeColor: 'text-zinc-300 bg-void-900 border-zinc-700' },
       { name: 'Live Pipeline', href: '/pipeline', icon: Zap, badge: 'AUTO', badgeColor: 'text-neon-emerald bg-neon-emerald/10 border-neon-emerald/30' },
       { name: 'War-Room', href: '/war-room', icon: Flame, badge: 'INCIDENT', badgeColor: 'text-neon-crimson bg-neon-crimson/15 border-neon-crimson/40', ping: true }

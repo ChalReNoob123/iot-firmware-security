@@ -284,13 +284,21 @@ export default function AttackBlastRadiusSimulator() {
               <span className="text-zinc-500 text-[11px]">
                 NEO4J BOLT // DIJKSTRA REST INTEGRATION
               </span>
-              <Link
-                href="/attack-graph"
-                className="px-4 py-2 rounded-xl bg-neon-cyan text-void-950 font-bold hover:bg-neon-cyan/90 transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(0,240,255,0.25)]"
-              >
-                <span>Full 3D Attack Graph</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </Link>
+              <div className="flex items-center gap-2">
+                <Link
+                  href="/vulnerabilities"
+                  className="px-3.5 py-2 rounded-xl bg-neon-crimson text-white font-bold hover:bg-neon-crimson/90 transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(255,0,85,0.25)] text-xs"
+                >
+                  <span>Vulnerability Triage</span>
+                </Link>
+                <Link
+                  href="/attack-graph"
+                  className="px-4 py-2 rounded-xl bg-neon-cyan text-void-950 font-bold hover:bg-neon-cyan/90 transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(0,240,255,0.25)] text-xs"
+                >
+                  <span>Full 3D Attack Graph</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              </div>
             </div>
 
           </div>

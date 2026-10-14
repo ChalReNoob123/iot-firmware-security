@@ -342,17 +342,18 @@ export default function FirmwareDropzoneTerminal() {
 
                     <div className="flex items-center gap-2 font-mono text-xs">
                       <Link
+                        href="/vulnerabilities"
+                        className="px-4 py-2 rounded-xl bg-neon-crimson text-white font-bold hover:bg-neon-crimson/90 transition-all shadow-[0_0_15px_rgba(255,0,85,0.3)] flex items-center gap-1.5"
+                      >
+                        <Shield className="w-3.5 h-3.5" />
+                        <span>Vulnerability Workbench</span>
+                      </Link>
+                      <Link
                         href="/attack-graph"
                         className="px-4 py-2 rounded-xl bg-neon-cyan text-void-950 font-bold hover:bg-neon-cyan/90 transition-all shadow-[0_0_15px_rgba(0,240,255,0.3)] flex items-center gap-1.5"
                       >
-                        <span>Inspect Attack Graph</span>
+                        <span>Attack Graph</span>
                         <ArrowRight className="w-3.5 h-3.5" />
-                      </Link>
-                      <Link
-                        href="/pipeline"
-                        className="px-4 py-2 rounded-xl bg-void-900 hover:bg-void-800 border border-zinc-border text-white transition-all flex items-center gap-1.5"
-                      >
-                        <span>Full Taint Pipeline</span>
                       </Link>
                     </div>
                   </div>

@@ -455,8 +455,16 @@ export default function CinematicVideoScrubberSection() {
               {/* Direct Link Actions */}
               <div className="flex items-center gap-3 text-xs">
                 <Link
+                  href="/vulnerabilities"
+                  className="px-3 py-1.5 rounded-lg bg-neon-crimson/15 text-neon-crimson border border-neon-crimson/40 hover:bg-neon-crimson hover:text-white flex items-center gap-1.5 font-bold transition-all shadow-[0_0_12px_rgba(255,0,85,0.25)]"
+                >
+                  <ShieldAlert className="w-3.5 h-3.5" />
+                  <span>Vulnerability Tracker</span>
+                  <ArrowUpRight className="w-3 h-3" />
+                </Link>
+                <Link
                   href="/attack-graph"
-                  className="text-neon-cyan hover:underline flex items-center gap-1 font-bold"
+                  className="text-zinc-300 hover:text-white hover:underline flex items-center gap-1 font-bold"
                 >
                   <span>Attack Graph</span>
                   <ArrowUpRight className="w-3 h-3" />
@@ -465,7 +473,7 @@ export default function CinematicVideoScrubberSection() {
                   href="/terminal"
                   className="text-zinc-400 hover:text-white flex items-center gap-1"
                 >
-                  <span>Interactive Terminal</span>
+                  <span>Terminal</span>
                   <ArrowUpRight className="w-3 h-3" />
                 </Link>
               </div>

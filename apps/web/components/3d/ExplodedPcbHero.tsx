@@ -139,27 +139,6 @@ export default function ExplodedPcbHero() {
     laserPlane.rotation.x = Math.PI / 2;
     scene.add(laserPlane);
 
-    // Particle Cloud (Firmware byte flux)
-    const particleCount = 200;
-    const particleGeo = new THREE.BufferGeometry();
-    const particlePos = new Float32Array(particleCount * 3);
-
-    for (let i = 0; i < particleCount * 3; i += 3) {
-      particlePos[i] = (Math.random() - 0.5) * 12;
-      particlePos[i + 1] = (Math.random() - 0.5) * 8;
-      particlePos[i + 2] = (Math.random() - 0.5) * 10;
-    }
-
-    particleGeo.setAttribute('position', new THREE.BufferAttribute(particlePos, 3));
-    const particleMat = new THREE.PointsMaterial({
-      color: 0x38bdf8,
-      size: 0.06,
-      transparent: true,
-      opacity: 0.7
-    });
-    const particles = new THREE.Points(particleGeo, particleMat);
-    scene.add(particles);
-
     // Mouse Interaction
     let mouseX = 0;
     let mouseY = 0;
@@ -207,9 +186,6 @@ export default function ExplodedPcbHero() {
 
       // Pulse RF point light
       pointLight.intensity = 2 + Math.sin(elapsedTime * 4) * 1.5;
-
-      // Rotate particle dust
-      particles.rotation.y = elapsedTime * 0.05;
 
       renderer.render(scene, camera);
     };

@@ -1,12 +1,15 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { ArrowUpRight, Terminal, Shield, Zap, Sparkles, ChevronRight, Activity } from 'lucide-react';
+import { ArrowUpRight, Terminal, Shield, Zap, Sparkles, ChevronRight, Activity, Layers, Cpu, ShieldAlert } from 'lucide-react';
 import SpatialSocChip from '@/components/canvas/SpatialSocChip';
+import ExplodedPcbHero from '@/components/3d/ExplodedPcbHero';
 
 export default function HeroSection() {
+  const [active3DMode, setActive3DMode] = useState<'SPATIAL_SOC' | 'EXPLODED_PCB'>('SPATIAL_SOC');
+
   return (
     <section className="relative pt-24 sm:pt-32 pb-16 sm:pb-24 overflow-hidden flex flex-col items-center">
       {/* Background Radial Glow & Gradient Mesh */}
@@ -26,7 +29,7 @@ export default function HeroSection() {
           <span className="w-2 h-2 rounded-full bg-neon-cyan animate-pulse" />
           <span className="text-white font-semibold">SENTINELFORGE 2.0</span>
           <span className="text-zinc-500">&bull;</span>
-          <span className="text-zinc-400">MICROVM PERIPHERAL SANDBOXING</span>
+          <span className="text-neon-cyan font-bold">INDUSTRIAL FIRMWARE VULNERABILITY INTELLIGENCE</span>
           <ChevronRight className="w-3.5 h-3.5 text-zinc-500" />
         </motion.div>
 
@@ -61,21 +64,30 @@ export default function HeroSection() {
           transition={{ duration: 0.65, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
           className="mt-8 sm:mt-10 flex flex-wrap items-center justify-center gap-3 sm:gap-4 font-mono text-xs sm:text-sm"
         >
+          {/* Flagship Vulnerability Workbench Button */}
+          <Link
+            href="/vulnerabilities"
+            className="px-6 py-3.5 rounded-full bg-gradient-to-r from-neon-crimson via-neon-amber to-neon-cyan text-white font-black hover:opacity-95 transition-all duration-300 shadow-[0_0_35px_rgba(255,0,85,0.4)] flex items-center gap-2 group"
+          >
+            <ShieldAlert className="w-4 h-4 text-white animate-pulse" />
+            <span>Launch Vulnerability Workbench</span>
+            <ArrowUpRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+          </Link>
+
           <a
             href="#dropzone"
-            className="px-6 py-3.5 rounded-full bg-neon-cyan text-void-950 font-bold hover:bg-neon-cyan/90 transition-all duration-300 shadow-[0_0_30px_rgba(0,240,255,0.4)] flex items-center gap-2 group"
+            className="px-6 py-3.5 rounded-full bg-void-800/90 hover:bg-void-700 border border-neon-cyan/40 text-white font-bold transition-all duration-300 shadow-[0_0_20px_rgba(0,240,255,0.2)] flex items-center gap-2 group"
           >
-            <Terminal className="w-4 h-4 text-void-950" />
+            <Terminal className="w-4 h-4 text-neon-cyan" />
             <span>Drop Firmware Binary</span>
-            <ArrowUpRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
           </a>
 
           <Link
             href="/dashboard"
-            className="px-6 py-3.5 rounded-full bg-void-800/80 hover:bg-void-700/80 border border-zinc-border text-white transition-all duration-300 backdrop-blur-xl flex items-center gap-2"
+            className="px-6 py-3.5 rounded-full bg-void-900/80 hover:bg-void-800 border border-zinc-border text-zinc-300 hover:text-white transition-all duration-300 backdrop-blur-xl flex items-center gap-2"
           >
             <Activity className="w-4 h-4 text-neon-cyan" />
-            <span>Launch Operator Console</span>
+            <span>Operator Console</span>
           </Link>
 
           <Link
@@ -87,7 +99,7 @@ export default function HeroSection() {
           </Link>
         </motion.div>
 
-        {/* Real-Time Mock Telemetry Ticker Readout Bar */}
+        {/* Real-Time Telemetry Ticker Readout Bar */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -99,27 +111,59 @@ export default function HeroSection() {
               <span className="w-2 h-2 rounded-full bg-neon-cyan animate-ping" />
               TELEMETRY:
             </span>
-            <span className="text-zinc-300">[EXTRACT: SQUASHFS/UBIFS]</span>
+            <span className="text-zinc-300">[DISASSEMBLY: CAPSTONE & GHIDRA]</span>
             <span className="text-zinc-600">&bull;</span>
-            <span className="text-zinc-300">[EGRESS: DENY-ALL]</span>
+            <span className="text-zinc-300">[EXTRACT: SQUASHFS/UBIFS]</span>
             <span className="text-zinc-600">&bull;</span>
             <span className="text-zinc-300">[SANDBOX: KVM/FIRECRACKER]</span>
             <span className="text-zinc-600">&bull;</span>
-            <span className="text-zinc-300">[STORAGE: TIMESCALEDB]</span>
+            <span className="text-zinc-300">[CHECKSEC: NX/CANARY/PIE]</span>
           </div>
           <span className="text-zinc-500 hidden md:block shrink-0">
             LATENCY: 0.8ms &bull; CLUSTER: US-EAST-1
           </span>
         </motion.div>
 
-        {/* Central 3D Spatial SoC Chip Canvas */}
+        {/* 3D Visual Model Switcher Pill Bar */}
+        <div className="mt-8 flex items-center gap-2 p-1.5 rounded-xl bg-void-900/90 border border-zinc-800 backdrop-blur-xl font-mono text-xs">
+          <button
+            onClick={() => setActive3DMode('SPATIAL_SOC')}
+            className={`px-3.5 py-1.5 rounded-lg flex items-center gap-1.5 font-bold transition-all ${
+              active3DMode === 'SPATIAL_SOC'
+                ? 'bg-neon-cyan text-void-950 shadow-[0_0_12px_rgba(0,240,255,0.4)]'
+                : 'text-zinc-400 hover:text-white'
+            }`}
+          >
+            <Cpu className="w-3.5 h-3.5" />
+            <span>SoC Architecture & Pinout</span>
+          </button>
+
+          <button
+            onClick={() => setActive3DMode('EXPLODED_PCB')}
+            className={`px-3.5 py-1.5 rounded-lg flex items-center gap-1.5 font-bold transition-all ${
+              active3DMode === 'EXPLODED_PCB'
+                ? 'bg-neon-purple text-white shadow-[0_0_12px_rgba(168,85,247,0.4)]'
+                : 'text-zinc-400 hover:text-white'
+            }`}
+          >
+            <Layers className="w-3.5 h-3.5" />
+            <span>Exploded PCB Substrate</span>
+          </button>
+        </div>
+
+        {/* Central 3D Spatial Canvas Display */}
         <motion.div
           initial={{ opacity: 0, scale: 0.96 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.9, delay: 0.45, ease: [0.16, 1, 0.3, 1] }}
-          className="mt-8 sm:mt-12 w-full"
+          className="mt-6 w-full relative"
         >
-          <SpatialSocChip />
+          {active3DMode === 'SPATIAL_SOC' && <SpatialSocChip />}
+          {active3DMode === 'EXPLODED_PCB' && (
+            <div className="w-full h-[520px] rounded-2xl bg-void-950 border border-zinc-800 overflow-hidden relative shadow-2xl p-4">
+              <ExplodedPcbHero />
+            </div>
+          )}
         </motion.div>
 
         {/* Micro-Metrics Quad Bar */}
@@ -140,9 +184,9 @@ export default function HeroSection() {
             <div className="text-[10px] text-neon-purple mt-0.5">Weighted resistance cost</div>
           </div>
           <div className="p-4 rounded-2xl bg-void-900/60 border border-zinc-border">
-            <div className="text-[11px] text-zinc-500 uppercase tracking-wider">Hardware Required</div>
-            <div className="text-2xl font-bold font-heading text-white mt-1">0 Probes</div>
-            <div className="text-[10px] text-neon-emerald mt-0.5">Full MMIO emulation</div>
+            <div className="text-[11px] text-zinc-500 uppercase tracking-wider">Vulnerability Intelligence</div>
+            <div className="text-2xl font-bold font-heading text-white mt-1">CISA KEV</div>
+            <div className="text-[10px] text-neon-emerald mt-0.5">CVSS v4.0 & EPSS 3.0</div>
           </div>
         </div>
 

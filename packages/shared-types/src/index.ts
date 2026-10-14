@@ -160,6 +160,7 @@ export interface AttackGraphNode {
     emb3dRef?: string;
     port?: number;
     privilegeLevel?: string;
+    [key: string]: any;
   };
 }
 
@@ -167,9 +168,20 @@ export interface AttackGraphEdge {
   id: string;
   source: string;
   target: string;
-  relationship: 'EXPOSES' | 'EXPLOITS' | 'ESCALATES_TO' | 'COMPROMISES' | 'LEADS_TO' | 'CROSS_CORRELATES';
+  relationship:
+    | 'EXPOSES'
+    | 'EXPLOITS'
+    | 'ESCALATES_TO'
+    | 'COMPROMISES'
+    | 'LEADS_TO'
+    | 'CROSS_CORRELATES'
+    | 'ACCESSES_PERIPHERAL'
+    | 'ALLOWS_LATERAL_MOVE'
+    | 'EXFILTRATES'
+    | string;
   isInShortestAttackPath?: boolean;
   exploitConfidence: number; // 0.0 - 1.0
+  properties?: Record<string, any>;
 }
 
 export interface AttackGraphData {

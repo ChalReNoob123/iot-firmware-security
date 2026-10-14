@@ -179,34 +179,6 @@ export default function SpatialSocChip({ className = '' }: Props) {
     }
     group.add(busLinesGroup);
 
-    // 5. Kinetic Floating Particles (Simulating Memory Taint / Cache Bus Packets)
-    const particleCount = 140;
-    const particleGeo = new THREE.BufferGeometry();
-    const particlePositions = new Float32Array(particleCount * 3);
-    const particleVelocities: { x: number; y: number; z: number }[] = [];
-
-    for (let i = 0; i < particleCount; i++) {
-      particlePositions[i * 3] = (Math.random() - 0.5) * 8;
-      particlePositions[i * 3 + 1] = Math.random() * 3 + 0.1;
-      particlePositions[i * 3 + 2] = (Math.random() - 0.5) * 8;
-      particleVelocities.push({
-        x: (Math.random() - 0.5) * 0.008,
-        y: (Math.random() - 0.5) * 0.006,
-        z: (Math.random() - 0.5) * 0.008
-      });
-    }
-
-    particleGeo.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
-    const particleMat = new THREE.PointsMaterial({
-      color: 0x00f0ff,
-      size: 0.045,
-      transparent: true,
-      opacity: 0.7,
-      blending: THREE.AdditiveBlending
-    });
-    const particleSystem = new THREE.Points(particleGeo, particleMat);
-    group.add(particleSystem);
-
     // Pointer Parallax Response
     let mouseX = 0;
     let mouseY = 0;
@@ -255,16 +227,6 @@ export default function SpatialSocChip({ className = '' }: Props) {
         mesh.rotation.x += 0.01;
         mesh.rotation.y += 0.015;
       }
-
-      // Animate floating particles
-      const positions = particleGeo.attributes.position.array as Float32Array;
-      for (let i = 0; i < particleCount; i++) {
-        positions[i * 3 + 1] += particleVelocities[i].y;
-        if (positions[i * 3 + 1] > 3.5 || positions[i * 3 + 1] < 0.1) {
-          particleVelocities[i].y *= -1;
-        }
-      }
-      particleGeo.attributes.position.needsUpdate = true;
 
       // Wireframe pulse
       cageWireMat.opacity = 0.2 + Math.sin(elapsed * 3) * 0.12;

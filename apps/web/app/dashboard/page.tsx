@@ -12,8 +12,6 @@ import {
 } from '@/lib/api';
 import { DeviceProfile, ScanSession } from '@sentinelforge/shared-types';
 import { useSentinelStore } from '@/lib/store';
-import HyperSpatial4DVisualizer from '@/components/3d/HyperSpatial4DVisualizer';
-import DashboardScrollVideoScrubber from '@/components/motion/DashboardScrollVideoScrubber';
 import {
   Shield,
   ShieldAlert,
@@ -34,7 +32,10 @@ import {
   Lock,
   Wifi,
   FileCode,
-  Sliders
+  Sliders,
+  Sparkles,
+  GitBranch,
+  Binary
 } from 'lucide-react';
 
 export default function DashboardPage() {
@@ -211,6 +212,14 @@ export default function DashboardPage() {
             <Lock className="w-3.5 h-3.5 text-neon-cyan" />
             <span>Sign Attestation</span>
           </button>
+
+          <Link
+            href="/vulnerabilities"
+            className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-neon-crimson/20 to-neon-amber/20 border border-neon-crimson/50 text-xs text-white hover:border-neon-crimson transition-all flex items-center gap-2 shadow-[0_0_15px_rgba(255,0,85,0.25)] font-bold font-mono"
+          >
+            <ShieldAlert className="w-3.5 h-3.5 text-neon-crimson animate-pulse" />
+            <span>Vulnerability Tracker</span>
+          </Link>
 
           <Link
             href="/pipeline"
@@ -415,47 +424,243 @@ export default function DashboardPage() {
         )}
       </div>
 
-      {/* 4. 4D Spatio-Temporal Hypercube Visualizer */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between px-1">
+      {/* 4. Industrial Attack Surface & Subsystem Vulnerability Matrix */}
+      <div className="p-6 rounded-3xl border border-zinc-border bg-void-900/90 shadow-2xl backdrop-blur-xl flex flex-col gap-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-zinc-border/60 pb-4">
           <div>
-            <h2 className="text-base font-bold text-white flex items-center gap-2">
-              <Layers className="w-4 h-4 text-neon-cyan" />
-              <span>4D SPATIO-TEMPORAL HYPERCUBE ATTACK SURFACE</span>
-            </h2>
-            <p className="text-xs text-zinc-400">
-              4-Dimensional projection across Euclidean space &bull; Scrubbing the 4th dimension (W-axis) tracks temporal vulnerability evolution
+            <div className="flex items-center gap-2.5">
+              <ShieldAlert className="w-4 h-4 text-neon-crimson" />
+              <h2 className="text-base font-bold text-white tracking-wide">
+                FIRMWARE SUBSYSTEM EXPOSURE & ZERO-DAY ATTACK SURFACE
+              </h2>
+            </div>
+            <p className="text-xs text-zinc-400 mt-1">
+              Active attack surface mapping across kernel, wireless radio, embedded web, and cryptographic partitions.
             </p>
           </div>
-          <span className="text-xs text-neon-cyan font-bold bg-neon-cyan/10 px-2.5 py-1 rounded-md border border-neon-cyan/30 hidden sm:inline-block">
-            SO(4) ROTATION MATRIX
-          </span>
+
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-bold px-2.5 py-1 rounded-md bg-neon-crimson/15 text-neon-crimson border border-neon-crimson/30">
+              2 ZERO-DAYS ACTIVE
+            </span>
+            <Link
+              href="/vulnerabilities"
+              className="px-3 py-1 rounded-lg bg-void-950 border border-zinc-700 text-xs text-neon-cyan hover:border-neon-cyan flex items-center gap-1.5 transition-all font-bold"
+            >
+              <span>Vulnerability Workbench</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
         </div>
 
-        <HyperSpatial4DVisualizer activeCveCount={cisaTotalCount} />
+        {/* 5 Subsystem Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3.5">
+          {/* Subsystem 1: Radio / BLE */}
+          <div className="p-4 rounded-2xl bg-void-950 border border-neon-crimson/40 flex flex-col justify-between gap-3 shadow-lg">
+            <div>
+              <div className="flex items-center justify-between text-xs">
+                <span className="font-bold text-white flex items-center gap-1.5">
+                  <Radio className="w-3.5 h-3.5 text-neon-crimson" />
+                  RADIO / BLE
+                </span>
+                <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-neon-crimson/20 text-neon-crimson border border-neon-crimson/30">
+                  CVSS 9.8
+                </span>
+              </div>
+              <div className="text-[11px] text-zinc-300 font-bold mt-2">SF-ZERO-2026-001</div>
+              <div className="text-[10px] text-zinc-400 line-clamp-2 mt-0.5">
+                Unbounded memcpy in parse_ble_advertisement_packet corrupting $lr register.
+              </div>
+            </div>
+            <div className="pt-2 border-t border-zinc-800/80 flex items-center justify-between text-[10px]">
+              <span className="text-zinc-500">SSVC Priority:</span>
+              <span className="text-neon-crimson font-bold">ACT</span>
+            </div>
+          </div>
+
+          {/* Subsystem 2: Web Management */}
+          <div className="p-4 rounded-2xl bg-void-950 border border-neon-amber/40 flex flex-col justify-between gap-3 shadow-lg">
+            <div>
+              <div className="flex items-center justify-between text-xs">
+                <span className="font-bold text-white flex items-center gap-1.5">
+                  <Wifi className="w-3.5 h-3.5 text-neon-amber" />
+                  WEB / CGI
+                </span>
+                <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-neon-amber/20 text-neon-amber border border-neon-amber/30">
+                  CVSS 8.8
+                </span>
+              </div>
+              <div className="text-[11px] text-zinc-300 font-bold mt-2">CVE-2024-21887</div>
+              <div className="text-[10px] text-zinc-400 line-clamp-2 mt-0.5">
+                Admin session cookie spoofing via weak PRNG seed srand(time(NULL)).
+              </div>
+            </div>
+            <div className="pt-2 border-t border-zinc-800/80 flex items-center justify-between text-[10px]">
+              <span className="text-zinc-500">SSVC Priority:</span>
+              <span className="text-neon-amber font-bold">ACT</span>
+            </div>
+          </div>
+
+          {/* Subsystem 3: Kernel & Memory */}
+          <div className="p-4 rounded-2xl bg-void-950 border border-zinc-800 flex flex-col justify-between gap-3 shadow-lg">
+            <div>
+              <div className="flex items-center justify-between text-xs">
+                <span className="font-bold text-white flex items-center gap-1.5">
+                  <Binary className="w-3.5 h-3.5 text-neon-cyan" />
+                  KERNEL MEMORY
+                </span>
+                <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-neon-cyan/20 text-neon-cyan border border-neon-cyan/30">
+                  CHECKSEC
+                </span>
+              </div>
+              <div className="text-[11px] text-zinc-300 font-bold mt-2">Unshielded Stack</div>
+              <div className="text-[10px] text-zinc-400 line-clamp-2 mt-0.5">
+                Stack Canary: DISABLED &bull; NX: RWX Executable Stack &bull; PIE: NO PIE.
+              </div>
+            </div>
+            <div className="pt-2 border-t border-zinc-800/80 flex items-center justify-between text-[10px]">
+              <span className="text-zinc-500">Exploitability:</span>
+              <span className="text-neon-crimson font-bold">TRIVIAL ROP</span>
+            </div>
+          </div>
+
+          {/* Subsystem 4: Hardware Peripheral */}
+          <div className="p-4 rounded-2xl bg-void-950 border border-zinc-800 flex flex-col justify-between gap-3 shadow-lg">
+            <div>
+              <div className="flex items-center justify-between text-xs">
+                <span className="font-bold text-white flex items-center gap-1.5">
+                  <Terminal className="w-3.5 h-3.5 text-neon-purple" />
+                  HARDWARE BUS
+                </span>
+                <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-neon-purple/20 text-neon-purple border border-neon-purple/30">
+                  PHYSICAL
+                </span>
+              </div>
+              <div className="text-[11px] text-zinc-300 font-bold mt-2">UART Bootargs Escape</div>
+              <div className="text-[10px] text-zinc-400 line-clamp-2 mt-0.5">
+                3-second autoboot window allows serial console break to inject init=/bin/sh.
+              </div>
+            </div>
+            <div className="pt-2 border-t border-zinc-800/80 flex items-center justify-between text-[10px]">
+              <span className="text-zinc-500">SSVC Priority:</span>
+              <span className="text-neon-purple font-bold">ATTEND</span>
+            </div>
+          </div>
+
+          {/* Subsystem 5: Cryptography */}
+          <div className="p-4 rounded-2xl bg-void-950 border border-zinc-800 flex flex-col justify-between gap-3 shadow-lg">
+            <div>
+              <div className="flex items-center justify-between text-xs">
+                <span className="font-bold text-white flex items-center gap-1.5">
+                  <Lock className="w-3.5 h-3.5 text-neon-emerald" />
+                  CRYPTOGRAPHY
+                </span>
+                <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-neon-emerald/20 text-neon-emerald border border-neon-emerald/30">
+                  CRA GAP
+                </span>
+              </div>
+              <div className="text-[11px] text-zinc-300 font-bold mt-2">Universal RSA Key</div>
+              <div className="text-[10px] text-zinc-400 line-clamp-2 mt-0.5">
+                Hardcoded RSA-2048 private key in /etc/ssl/gateway.key embedded in SquashFS.
+              </div>
+            </div>
+            <div className="pt-2 border-t border-zinc-800/80 flex items-center justify-between text-[10px]">
+              <span className="text-zinc-500">SSVC Priority:</span>
+              <span className="text-neon-amber font-bold">ATTEND</span>
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* 5. Page-Scrolling Silicon Execution Video Animation */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between px-1">
+      {/* 5. Industrial Hardware Bus & Physical Peripheral Telemetry Board */}
+      <div className="p-6 rounded-3xl border border-zinc-border bg-void-900/90 shadow-2xl backdrop-blur-xl flex flex-col gap-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-zinc-border/60 pb-4">
           <div>
-            <h2 className="text-base font-bold text-white flex items-center gap-2">
-              <Activity className="w-4 h-4 text-neon-cyan" />
-              <span>PAGE-SCROLLING SILICON EXECUTION & MEMORY SCANNER</span>
-            </h2>
-            <p className="text-xs text-zinc-400">
-              Scroll page to scrub hardware execution frames &bull; Silicon bus traces, Shannon entropy decompressed stream, and zero-day memory sink overwrite
+            <div className="flex items-center gap-2.5">
+              <Cpu className="w-4 h-4 text-neon-cyan" />
+              <h2 className="text-base font-bold text-white tracking-wide">
+                PHYSICAL PERIPHERAL BUS & HARDWARE ATTACK SURFACES
+              </h2>
+            </div>
+            <p className="text-xs text-zinc-400 mt-1">
+              Active telemetry from virtualized bus controllers, serial baud channels, and boundary scan pads.
             </p>
           </div>
-          <span className="text-xs text-neon-crimson font-bold bg-neon-crimson/10 px-2.5 py-1 rounded-md border border-neon-crimson/30 hidden sm:inline-block">
-            HARDWARE EMULATION STREAM
-          </span>
+
+          <div className="flex items-center gap-2">
+            <Link
+              href="/emulator"
+              className="px-3 py-1.5 rounded-xl bg-neon-cyan/20 border border-neon-cyan/40 text-xs text-neon-cyan hover:bg-neon-cyan hover:text-void-950 font-bold transition-all flex items-center gap-1.5 shadow-[0_0_12px_rgba(0,240,255,0.2)]"
+            >
+              <Terminal className="w-3.5 h-3.5" />
+              <span>Launch MicroVM Twin</span>
+            </Link>
+            <Link
+              href="/attack-graph"
+              className="px-3 py-1.5 rounded-xl bg-void-950 border border-zinc-700 text-xs text-zinc-300 hover:text-white flex items-center gap-1.5 transition-colors font-bold"
+            >
+              <GitBranch className="w-3.5 h-3.5 text-neon-crimson" />
+              <span>Solve Attack Graph</span>
+            </Link>
+          </div>
         </div>
 
-        <DashboardScrollVideoScrubber
-          firmwareName={selectedDevice?.name || 'firmware-ax9000.bin'}
-          architecture={`${selectedDevice?.architecture || 'ARM'} (${selectedDevice?.endianness || 'LITTLE'}-Endian)`}
-        />
+        {/* 6 Peripheral Bus Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3">
+          <div className="p-3.5 rounded-xl bg-void-950 border border-zinc-800 flex flex-col justify-between gap-1.5">
+            <div className="flex items-center justify-between text-[11px]">
+              <span className="font-bold text-white">UART0 CONSOLE</span>
+              <span className="w-2 h-2 rounded-full bg-neon-amber animate-pulse" />
+            </div>
+            <div className="text-xs font-mono text-neon-cyan">115,200 Baud</div>
+            <div className="text-[10px] text-zinc-400">8-N-1 &bull; Bootargs Exposed</div>
+          </div>
+
+          <div className="p-3.5 rounded-xl bg-void-950 border border-zinc-800 flex flex-col justify-between gap-1.5">
+            <div className="flex items-center justify-between text-[11px]">
+              <span className="font-bold text-white">SPI0 FLASH</span>
+              <span className="w-2 h-2 rounded-full bg-neon-emerald" />
+            </div>
+            <div className="text-xs font-mono text-neon-purple">25.0 MHz Clock</div>
+            <div className="text-[10px] text-zinc-400">ASPEED BMC Bus Bridge</div>
+          </div>
+
+          <div className="p-3.5 rounded-xl bg-void-950 border border-zinc-800 flex flex-col justify-between gap-1.5">
+            <div className="flex items-center justify-between text-[11px]">
+              <span className="font-bold text-white">I2C1 CRYPTO</span>
+              <span className="w-2 h-2 rounded-full bg-neon-emerald" />
+            </div>
+            <div className="text-xs font-mono text-neon-cyan">400 kHz Fast</div>
+            <div className="text-[10px] text-zinc-400">ATECC608B / TPM Link</div>
+          </div>
+
+          <div className="p-3.5 rounded-xl bg-void-950 border border-zinc-800 flex flex-col justify-between gap-1.5">
+            <div className="flex items-center justify-between text-[11px]">
+              <span className="font-bold text-white">JTAG / SWD</span>
+              <span className="w-2 h-2 rounded-full bg-neon-crimson animate-pulse" />
+            </div>
+            <div className="text-xs font-mono text-neon-crimson">20-Pin Active</div>
+            <div className="text-[10px] text-zinc-400">Testpads Unfused on PCB</div>
+          </div>
+
+          <div className="p-3.5 rounded-xl bg-void-950 border border-zinc-800 flex flex-col justify-between gap-1.5">
+            <div className="flex items-center justify-between text-[11px]">
+              <span className="font-bold text-white">BLE 4.2 RADIO</span>
+              <span className="w-2 h-2 rounded-full bg-neon-crimson animate-pulse" />
+            </div>
+            <div className="text-xs font-mono text-neon-crimson">UUID 0xFFE0</div>
+            <div className="text-[10px] text-zinc-400">Stack Overflow Sink</div>
+          </div>
+
+          <div className="p-3.5 rounded-xl bg-void-950 border border-zinc-800 flex flex-col justify-between gap-1.5">
+            <div className="flex items-center justify-between text-[11px]">
+              <span className="font-bold text-white">ETH0 INTERFACE</span>
+              <span className="w-2 h-2 rounded-full bg-neon-emerald" />
+            </div>
+            <div className="text-xs font-mono text-neon-emerald">100BASE-TX</div>
+            <div className="text-[10px] text-zinc-400">Ports 80, 443, 8883</div>
+          </div>
+        </div>
       </div>
 
       {/* 6. Live Official CISA Known Exploited Vulnerabilities (KEV) Catalog */}
